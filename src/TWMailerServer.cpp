@@ -9,16 +9,22 @@
 #include <iostream>
 #include <string.h>
 //#include <thread>
-//#include "ServerBusiness.h"
-#include "ServerBusiness.cpp"
+#include "ServerBusiness.h"
 #define BUF 1024
 
 void printUsage(std::string programName) {
-	std::cerr << "Usage:" << programName << "PORT(>1023) DIRPATH" << std::endl;
+	std::cerr << "Usage:" << programName << " PORT(>1023) DIRPATH" << std::endl;
 	exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
+
+	// Ausgabe der Parameter
+	std::cout << "argv0: " << argv[0] << std::endl;
+	std::cout << "argv1: " << argv[1] << std::endl;
+	std::cout << "argv2: " << argv[2] << std::endl;
+	std::cout << "argc: " << argc << std::endl;
+
 
 	if (argc != 3) {
 		printUsage(argv[0]);
@@ -33,7 +39,12 @@ int main(int argc, char *argv[]) {
 
 	struct sockaddr_in address, cliaddress;
 
-	int create_socket = socket(AF_INET, SOCK_STREAM, 0);
+	int create_socket;
+
+	if( (create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+		perror("Socket error");
+		return EXIT_FAILURE;
+	}
 
 	memset(&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
