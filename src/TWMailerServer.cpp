@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
 #include <string.h>
-//#include <thread>
-//#include "ServerBusiness.h"
-#include "ServerBusiness.cpp"
+#include <thread>
+#include "MessageService.h"
 #define BUF 1024
 
 void printUsage(std::string programName) {
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 	if (argc != 3) {
 		printUsage(argv[0]);
 	}
-	short port = (short) std::atoi(argv[1]);
+	short port = (short) atoi(argv[1]);
 
 	if (port < 1024) {
 		printUsage(argv[0]);
