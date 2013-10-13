@@ -6,23 +6,39 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 #include <string.h>
+//#include <thread>
+//#include "ServerBusiness.h"
+#include "ServerBusiness.cpp"
 #define BUF 1024
-#define PORT 6543
 
-int main(void) {
-	int create_socket, new_socket;
-	socklen_t addrlen;
-	char buffer[BUF];
-	int size;
+void printUsage(std::string programName) {
+	std::cerr << "Usage:" << programName << "PORT(>1023) DIRPATH" << std::endl;
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char *argv[]) {
+
+	if (argc != 3) {
+		printUsage(argv[0]);
+	}
+	short port = (short) std::atoi(argv[1]);
+
+	if (port < 1024) {
+		printUsage(argv[0]);
+	}
+	std::string dirPath = argv[2];
+
+
 	struct sockaddr_in address, cliaddress;
 
-	create_socket = socket(AF_INET, SOCK_STREAM, 0);
+	int create_socket = socket(AF_INET, SOCK_STREAM, 0);
 
 	memset(&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons (PORT);
+	address.sin_port = htons (port);
 
 	if (bind(create_socket, (struct sockaddr *) &address, sizeof(address))
 			!= 0) {
@@ -31,11 +47,15 @@ int main(void) {
 	}
 	listen(create_socket, 5);
 
-	addrlen = sizeof(struct sockaddr_in);
+	socklen_t addrlen = sizeof(struct sockaddr_in);
+
+	char buffer[BUF];
+	int size;
+	//std::vector<std::thread> threads;
 
 	while (1) {
 		printf("Waiting for connections...\n");
-		new_socket = accept(create_socket, (struct sockaddr *) &cliaddress,
+		int new_socket = accept(create_socket, (struct sockaddr *) &cliaddress,
 				&addrlen);
 		if (new_socket > 0) {
 			printf("Client connected from %s:%d...\n",
