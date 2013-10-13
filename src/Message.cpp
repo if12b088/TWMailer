@@ -6,9 +6,8 @@
  */
 
 #include "Message.h"
-#include <string>
 
-Message::Message(){
+Message::Message() {
 }
 
 Message::Message(std::string from, std::string to, std::string subject,
@@ -46,5 +45,23 @@ std::string Message::getText() {
 }
 void Message::setText(std::string text) {
 	this->text = text;
+}
+long long Message::getMsgNr() {
+	return this->msgNr;
+}
+void Message::setMsgNr(long long msgNr) {
+	this->msgNr = msgNr;
+}
+
+std::string Message::toString() {
+	std::string result;
+	result.append(this->from);
+	result.append("\n");
+	result.append(this->to);
+	result.append("\n");
+	result.append(this->subject);
+	result.append("\n");
+	result.append(this->text);
+	return result;
 }
 

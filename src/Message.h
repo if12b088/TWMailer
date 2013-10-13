@@ -24,11 +24,15 @@ public:
 	virtual void setSubject(std::string subject);
 	virtual std::string getText();
 	virtual void setText(std::string text);
+	virtual long long getMsgNr();
+	virtual void setMsgNr(long long msgNr);
+	virtual std::string toString();
 private:
 	std::string from;
 	std::string to;
 	std::string subject;
 	std::string text;
+	long long msgNr;
 };
 
 #endif /* MESSAGE_H_ */

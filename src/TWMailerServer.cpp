@@ -26,7 +26,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "argv2: " << argv[2] << std::endl;
 	std::cout << "argc: " << argc << std::endl;
 
-
 	if (argc != 3) {
 		printUsage(argv[0]);
 	}
@@ -37,12 +36,11 @@ int main(int argc, char *argv[]) {
 	}
 	std::string dirPath = argv[2];
 
-
 	struct sockaddr_in address, cliaddress;
 
 	int create_socket;
 
-	if( (create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+	if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Socket error");
 		return EXIT_FAILURE;
 	}
@@ -50,7 +48,7 @@ int main(int argc, char *argv[]) {
 	memset(&address, 0, sizeof(address));
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = INADDR_ANY;
-	address.sin_port = htons (port);
+	address.sin_port = htons(port);
 
 	if (bind(create_socket, (struct sockaddr *) &address, sizeof(address))
 			!= 0) {
@@ -71,8 +69,7 @@ int main(int argc, char *argv[]) {
 				&addrlen);
 		if (new_socket > 0) {
 			printf("Client connected from %s:%d...\n",
-					inet_ntoa(cliaddress.sin_addr),
-					ntohs(cliaddress.sin_port) );
+					inet_ntoa(cliaddress.sin_addr), ntohs(cliaddress.sin_port));
 			strcpy(buffer, "Welcome to myserver, Please enter your command:\n");
 			send(new_socket, buffer, strlen(buffer), 0);
 		}

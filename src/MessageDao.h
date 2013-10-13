@@ -14,14 +14,14 @@
 
 class MessageDao {
 public:
-	MessageDao(std::string dirPath);
+	MessageDao(char* dirPath);
 	virtual ~MessageDao();
-	virtual void saveMessage(Message* msg);
+	virtual bool saveMessage(Message msg);
 	virtual std::list<Message> loadMessages(std::string username);
-	virtual Message* readMessage(std::string username, int msgNr);
-	virtual bool delMessage(std::string username, int msgNr);
+	virtual Message readMessage(std::string username, long long msgNr);
+	virtual bool delMessage(std::string username, long long msgNr);
 private:
-	std::string path;
+	char* dirPath;
 };
 
 #endif /* MessageDao_H_ */
