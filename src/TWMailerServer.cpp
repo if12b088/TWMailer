@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <string.h>
 //#include <thread>
@@ -38,8 +39,8 @@ int main(int argc, char *argv[]) {
 	}
 	std::string dirPath = argv[2];
 
-//	MessageDao* dao = new MessageDao(dirPath.c_str());
-//	MessageService* service = new MessageService(dao);
+	MessageDao* dao = new MessageDao(dirPath.c_str());
+	MessageService* service = new MessageService(dao);
 
 	struct sockaddr_in address, cliaddress;
 
@@ -83,8 +84,7 @@ int main(int argc, char *argv[]) {
 				&addrlen);
 		if (new_socket > 0) {
 			printf("Client connected from %s:%d...\n",
-					inet_ntoa(cliaddress.sin_addr),
-					ntohs(cliaddress.sin_port) );
+					inet_ntoa(cliaddress.sin_addr), ntohs(cliaddress.sin_port));
 			strcpy(buffer, "Welcome to myserver, Please enter your command:\n");
 			send(new_socket, buffer, strlen(buffer), 0);
 		}
@@ -111,13 +111,11 @@ int main(int argc, char *argv[]) {
 					printf("Subject: %s, size: %d\n", subject, sizeSubject);
 					printf("Text: %s, size: %d\n", text, sizeText);
 
-//					if(service->sendMsg(from, to, subject, text)){
-//						returnBuffer = { "OK\n" };
-
-//					}else{
-//						returnBuffer = { "ERR\n" };
-//
-//					}
+					if (service->sendMsg(from, to, subject, text)) {
+						strcpy(returnBuffer, "OK\n");
+					} else {
+						strcpy(returnBuffer, "ERR\n");
+					}
 
 				}
 				if (strcmp(buffer, "LIST") == 0) {
@@ -127,14 +125,14 @@ int main(int argc, char *argv[]) {
 
 					printf("User: %s, size: %d\n", user, sizeUser);
 
-					//list<Message> msgList = service->listMsg(user);
-					//std::string temp;
+					std::list<Message> msgList = service->listMsg(user);
+					std::stringstream ss;
 
-					//temp.append(msgList.size);
+					ss << msgList.size();
 
 					//for temp.append(...);
 
-					//returnBuffer = temp.c_str();
+					strcpy(returnBuffer, ss.str().c_str());
 
 				}
 				if (strcmp(buffer, "READ") == 0) {
@@ -158,14 +156,13 @@ int main(int argc, char *argv[]) {
 					printf("User: %s, size: %d\n", user, sizeUser);
 					printf("Nr: %s, size: %d\n", nr, sizeNr);
 
-//					 //convert nr to long
-//					if (service->deleteMsg(user, nr)) {
-//						returnBuffer = {"OK\n"};
-//
-//					} else {
-//						returnBuffer = {"ERR\n"};
-//
-//					}
+					//convert nr to long
+					if (service->deleteMsg(user, atol(nr))) {
+						strcpy(returnBuffer, "OK\n");
+					} else {
+						strcpy(returnBuffer, "ERR\n");
+
+					}
 				}
 
 				//printf("Message received: %s\n", buffer);

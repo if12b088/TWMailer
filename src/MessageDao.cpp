@@ -13,11 +13,12 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <iostream>
+#include <sstream>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
 
-MessageDao::MessageDao(char* dirPath) {
+MessageDao::MessageDao(std::string dirPath) {
 	this->dirPath = dirPath;
 }
 
@@ -26,34 +27,33 @@ MessageDao::~MessageDao() {
 }
 
 bool MessageDao::saveMessage(Message msg) {
-	std::string userPath;
-	userPath.append(this->dirPath);
-	userPath.append("/");
-	userPath.append(msg.getTo());
+	std::stringstream userPath;
+	userPath << this->dirPath << "/" << msg.getTo();
+
+	const char* path = userPath.str().c_str();
 
 	DIR *dirp;
-	if ((dirp = opendir(userPath.c_str())) == NULL) {
+	if ((dirp = opendir(path)) == NULL) {
 
-		if (mkdir(userPath.c_str(), 0755) == -1) {
+		if (mkdir(path, 0755) == -1) {
 			std::cerr << "Error beim Dir erzeugen" << std::endl;
 			return false;
 		}
-		if ((dirp = opendir(userPath.c_str())) == NULL) {
+		if ((dirp = opendir(path)) == NULL) {
 			std::cerr << "Error beim Dir auslesen" << std::endl;
 			return false;
 		}
 	}
 	closedir(dirp);
 
-	userPath.append("/");
-
 	struct timeval te;
 	gettimeofday(&te, NULL); // get current time
 
-	userPath.append(std::to_string(te.tv_sec * 1000LL + te.tv_usec / 1000));
-	userPath.append(".msg");
+	userPath << "/" << te.tv_sec * 1000LL + te.tv_usec / 1000 << ".msg";
 
-	std::fstream f(userPath.c_str(), std::ios::out);
+	const char* fullPath = userPath.str().c_str();
+
+	std::fstream f(fullPath, std::ios::out);
 	f << msg.getFrom() << std::endl;
 	f << msg.getTo() << std::endl;
 	f << msg.getSubject() << std::endl;
@@ -91,20 +91,16 @@ std::list<Message> MessageDao::loadMessages(std::string username) {
 }
 
 Message MessageDao::readMessage(std::string username, long long msgNr) {
-
-	std::string path;
-	path.append(this->dirPath);
-	path.append("/");
-	path.append(username);
-	path.append("/");
-	path.append(std::to_string(msgNr));
-	path.append(".msg");
+	std::stringstream userPath;
+	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 
 	Message msg;
 	msg.setMsgNr(msgNr);
 
+	const char* path = userPath.str().c_str();
+
 	std::string line;
-	std::ifstream f(path.c_str());
+	std::ifstream f(path);
 	if (f.is_open()) {
 		getline(f, line);
 		msg.setFrom(line);
@@ -123,15 +119,12 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 }
 
 bool MessageDao::delMessage(std::string username, long long msgNr) {
-	std::string path;
-	path.append(this->dirPath);
-	path.append("/");
-	path.append(username);
-	path.append("/");
-	path.append(std::to_string(msgNr));
-	path.append(".msg");
+	std::stringstream userPath;
+	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 
-	if (remove(path.c_str()) != 0)
+	const char* path = userPath.str().c_str();
+
+	if (remove(path) != 0)
 		return false;
 	else
 		return true;
