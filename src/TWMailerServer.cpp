@@ -11,6 +11,8 @@
 #include <string.h>
 //#include <thread>
 #include "MessageService.h"
+#include "Helper.h"
+
 #define BUF 1024
 
 void printUsage(std::string programName) {
@@ -26,7 +28,6 @@ int main(int argc, char *argv[]) {
 	std::cout << "argv2: " << argv[2] << std::endl;
 	std::cout << "argc: " << argc << std::endl;
 
-
 	if (argc != 3) {
 		printUsage(argv[0]);
 	}
@@ -37,12 +38,14 @@ int main(int argc, char *argv[]) {
 	}
 	std::string dirPath = argv[2];
 
+	MessageDao* dao = new MessageDao(dirPath.c_str());
+	MessageService* service = new MessageService(dao);
 
 	struct sockaddr_in address, cliaddress;
 
 	int create_socket;
 
-	if( (create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1){
+	if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Socket error");
 		return EXIT_FAILURE;
 	}
@@ -77,9 +80,37 @@ int main(int argc, char *argv[]) {
 			send(new_socket, buffer, strlen(buffer), 0);
 		}
 		do {
+
 			size = recv(new_socket, buffer, BUF - 1, 0);
+
+//			char input[BUF];
+//			do{
+//				int size2 = Helper::readline(new_socket, input, BUF -1);
+//				printf("size2: %d\n",size2);
+//
+//			}while(strcmp(input,"\n.\n") != 0);
+
 			if (size > 0) {
 				buffer[size] = '\0';
+				if(strcmp(buffer, "SEND\n") == 0){
+					char from[9];
+					char to[9];
+					char subject[81];
+					char text[81];
+					int sizeFrom = Helper::readline(new_socket, from, 8);
+					int sizeTo = Helper::readline(new_socket, to, 8);
+					int sizeSubject =  Helper::readline(new_socket, subject, 8);
+					int sizeText = Helper::readline(new_socket, text, 8);
+					printf("From: %s, size: %d\n", from, sizeFrom);
+					printf("To: %s, size: %d\n", to, sizeTo);
+					printf("Subject: %s, size: %d\n", subject, sizeSubject);
+					printf("Text: %s, size: %d\n", text, sizeText);
+
+					if(service->sendMsg(from, to, subject, text)){
+						// OK oder ERR antworten
+					}
+				}
+
 				printf("Message received: %s\n", buffer);
 			} else if (size == 0) {
 				printf("Client closed remote socket\n");
