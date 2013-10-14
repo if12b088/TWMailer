@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 			if (size > 0) {
 				buffer[size] = '\0';
 
-				if (strcmp(buffer, "SEND") == 0) {
+				if (strcmp(buffer, "SEND\n") == 0) {
 					char from[9];
 					char to[9];
 					char subject[82];
@@ -106,6 +106,12 @@ int main(int argc, char *argv[]) {
 					int sizeTo = Helper::readline(new_socket, to, 9);
 					int sizeSubject = Helper::readline(new_socket, subject, 81);
 					int sizeText = Helper::readline(new_socket, text, 81);
+
+					from[strlen(from) - 1] = '\0';
+					to[strlen(to) - 1] = '\0';
+					subject[strlen(subject) - 1] = '\0';
+					text[strlen(text) - 1] = '\0';
+
 					printf("From: %s, size: %d\n", from, sizeFrom);
 					printf("To: %s, size: %d\n", to, sizeTo);
 					printf("Subject: %s, size: %d\n", subject, sizeSubject);
@@ -118,41 +124,65 @@ int main(int argc, char *argv[]) {
 					}
 
 				}
-				if (strcmp(buffer, "LIST") == 0) {
+				if (strcmp(buffer, "LIST\n") == 0) {
 					char user[9];
 
 					int sizeUser = Helper::readline(new_socket, user, 9);
 
 					printf("User: %s, size: %d\n", user, sizeUser);
+
+					user[strlen(user) - 1] = '\0'; // \n am Schluss entfernen
 
 					std::list<Message> msgList = service->listMsg(user);
 					std::stringstream ss;
 
-					ss << msgList.size();
+					ss << msgList.size() << "\n";
 
-					//for temp.append(...);
+					for (std::list<Message>::iterator it = msgList.begin();
+							it != msgList.end(); it++) {
+						Message msg = *it;
+						ss << msg.getMsgNr() << ": " << msg.getSubject()
+								<< "\n";
+					}
 
 					strcpy(returnBuffer, ss.str().c_str());
 
 				}
-				if (strcmp(buffer, "READ") == 0) {
+				if (strcmp(buffer, "READ\n") == 0) {
 					char user[9];
-					char nr[9];
+					char nr[20];
 
 					int sizeUser = Helper::readline(new_socket, user, 9);
-					int sizeNr = Helper::readline(new_socket, nr, 9);
+					int sizeNr = Helper::readline(new_socket, nr, 20);
+
+					user[strlen(user) - 1] = '\0';
+					nr[strlen(nr) - 1] = '\0';
+
 					printf("User: %s, size: %d\n", user, sizeUser);
 					printf("Nr: %s, size: %d\n", nr, sizeNr);
 
-					//TODO
+					Message msg = service->readMsg(user, atol(nr));
+
+					std::stringstream ss;
+
+					ss << "Nachricht mit der Nummer: " << msg.getMsgNr() << "\n"
+							<< msg.getFrom() << "\n" << msg.getTo() << "\n"
+							<< msg.getSubject() << "\n" << msg.getText()
+							<< "\n";
+
+					strcpy(returnBuffer, ss.str().c_str());
 
 				}
-				if (strcmp(buffer, "DEL") == 0) {
+				if (strcmp(buffer, "DEL\n") == 0) {
 					char user[9];
-					char nr[9];
+					char nr[20];
 
 					int sizeUser = Helper::readline(new_socket, user, 9);
-					int sizeNr = Helper::readline(new_socket, nr, 9);
+					int sizeNr = Helper::readline(new_socket, nr, 20);
+
+					user[strlen(user) - 1] = '\0';
+					nr[strlen(nr) - 1] = '\0';
+
 					printf("User: %s, size: %d\n", user, sizeUser);
 					printf("Nr: %s, size: %d\n", nr, sizeNr);
 
@@ -161,7 +191,6 @@ int main(int argc, char *argv[]) {
 						strcpy(returnBuffer, "OK\n");
 					} else {
 						strcpy(returnBuffer, "ERR\n");
-
 					}
 				}
 

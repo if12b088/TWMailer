@@ -85,7 +85,7 @@ std::list<Message> MessageDao::loadMessages(std::string username) {
 			}
 		}
 	} else {
-		std::cerr << "User nicht vorhanden" << std::endl;
+		std::cerr << "User nicht vorhanden: " << path << std::endl;
 	}
 	return list;
 }
