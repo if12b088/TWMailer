@@ -9,6 +9,7 @@
 #define HELPER_H_
 
 #include <unistd.h>
+#include <stdio.h>
 #include <errno.h>
 
 class Helper {

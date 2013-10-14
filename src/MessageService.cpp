@@ -17,17 +17,21 @@ MessageService::~MessageService() {
 }
 
 bool MessageService::sendMsg(std::string from, std::string to,
-		std::string subject, std::string msg) {
-	return true;
+		std::string subject, std::string text) {
+	Message msg;
+	msg.setFrom(from);
+	msg.setTo(to);
+	msg.setSubject(subject);
+	msg.setText(text);
+	return this->dao->saveMessage(msg);
 }
-std::list<std::string> MessageService::listMsg(std::string username) {
-	std::list < std::string > list;
-	return list;
+std::list<Message> MessageService::listMsg(std::string username) {
+	return this->dao->loadMessages(username);
 }
-std::string MessageService::readMsg(std::string username, int msgNr) {
-	return "bla";
+Message MessageService::readMsg(std::string username, long long msgNr) {
+	return this->dao->readMessage(username, msgNr);
 }
-bool MessageService::deleteMsg(std::string username, int msgNr) {
-	return true;
+bool MessageService::deleteMsg(std::string username, long long msgNr) {
+	return this->dao->delMessage(username, msgNr);
 }
 

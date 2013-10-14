@@ -34,8 +34,10 @@ ssize_t Helper::readline(int fd, char *vptr, size_t maxlen) {
 	for (n = 1; n < maxlen; n++) {
 		if ((rc = Helper::my_read(fd, &c)) == 1) {
 			*ptr++ = c;
-			if (c == '\n')
+			if (c == '\n'){
+				*(--ptr) = '\0'; // remove '\n'
 				break;
+			}
 		} else if (rc == 0) {
 			if (n == 1)
 				return (0);
