@@ -27,38 +27,40 @@ MessageDao::~MessageDao() {
 }
 
 bool MessageDao::saveMessage(Message msg) {
-	std::stringstream userPath;
-	userPath << this->dirPath << "/" << msg.getTo();
+	for (std::list<std::string>::iterator it = msg.getTo().begin();
+			it != msg.getTo().end(); it++) {
 
-	const char* path = userPath.str().c_str();
+		std::stringstream userPath;
+		userPath << this->dirPath << "/" << *it;
 
-	DIR *dirp;
-	if ((dirp = opendir(path)) == NULL) {
+		const char* path = userPath.str().c_str();
 
-		if (mkdir(path, 0755) == -1) {
-			std::cerr << "Error beim Dir erzeugen" << std::endl;
-			return false;
-		}
+		DIR *dirp;
 		if ((dirp = opendir(path)) == NULL) {
-			std::cerr << "Error beim Dir auslesen" << std::endl;
-			return false;
+
+			if (mkdir(path, 0755) == -1) {
+				std::cerr << "Error beim Dir erzeugen" << std::endl;
+				return false;
+			}
+			if ((dirp = opendir(path)) == NULL) {
+				std::cerr << "Error beim Dir auslesen" << std::endl;
+				return false;
+			}
 		}
+		closedir(dirp);
+
+		struct timeval te;
+		gettimeofday(&te, NULL); // get current time
+
+		userPath << "/" << te.tv_sec * 1000LL + te.tv_usec / 1000 << ".msg";
+
+		const char* fullPath = userPath.str().c_str();
+
+		std::fstream f(fullPath, std::ios::out);
+		f << msg.toString() << std::endl;
+		f.close();
+
 	}
-	closedir(dirp);
-
-	struct timeval te;
-	gettimeofday(&te, NULL); // get current time
-
-	userPath << "/" << te.tv_sec * 1000LL + te.tv_usec / 1000 << ".msg";
-
-	const char* fullPath = userPath.str().c_str();
-
-	std::fstream f(fullPath, std::ios::out);
-	f << msg.getFrom() << std::endl;
-	f << msg.getTo() << std::endl;
-	f << msg.getSubject() << std::endl;
-	f << msg.getText() << std::endl;
-	f.close();
 	return true;
 }
 
@@ -105,7 +107,14 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 		getline(f, line);
 		msg.setFrom(line);
 		getline(f, line);
-		msg.setTo(line);
+		std::string delimiter = ";";
+		size_t pos = 0;
+		std::string token;
+		while ((pos = line.find(delimiter)) != std::string::npos) {
+			token = line.substr(0, pos);
+			msg.getTo().push_back(token);
+			line.erase(0, pos + delimiter.length());
+		}
 		getline(f, line);
 		msg.setSubject(line);
 		std::string text;

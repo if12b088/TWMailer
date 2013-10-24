@@ -8,14 +8,16 @@
 #include "Message.h"
 
 Message::Message() {
+	msgNr = 0;
 }
 
-Message::Message(std::string from, std::string to, std::string subject,
-		std::string text) {
+Message::Message(std::string from, std::list<std::string> to,
+		std::string subject, std::string text) {
 	this->from = from;
 	this->to = to;
 	this->subject = subject;
 	this->text = text;
+	this->msgNr = 0;
 }
 
 Message::~Message() {
@@ -28,10 +30,10 @@ std::string Message::getFrom() {
 void Message::setFrom(std::string from) {
 	this->from = from;
 }
-std::string Message::getTo() {
+std::list<std::string> Message::getTo() {
 	return this->to;
 }
-void Message::setTo(std::string to) {
+void Message::setTo(std::list<std::string> to) {
 	this->to = to;
 }
 std::string Message::getSubject() {
@@ -57,7 +59,11 @@ std::string Message::toString() {
 	std::string result;
 	result.append(this->from);
 	result.append("\n");
-	result.append(this->to);
+	for (std::list<std::string>::iterator it = to.begin(); it != to.end();
+			it++) {
+		result.append(*it);
+		result.append(";");
+	}
 	result.append("\n");
 	result.append(this->subject);
 	result.append("\n");

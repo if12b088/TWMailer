@@ -13,13 +13,13 @@
 class Message {
 public:
 	Message();
-	Message(std::string from, std::string to, std::string subject,
+	Message(std::string from, std::list<std::string> to, std::string subject,
 			std::string text);
 	virtual ~Message();
 	virtual std::string getFrom();
 	virtual void setFrom(std::string from);
-	virtual std::string getTo();
-	virtual void setTo(std::string to);
+	virtual std::list<std::string> getTo();
+	virtual void setTo(std::list<std::string> to);
 	virtual std::string getSubject();
 	virtual void setSubject(std::string subject);
 	virtual std::string getText();
@@ -29,7 +29,7 @@ public:
 	virtual std::string toString();
 private:
 	std::string from;
-	std::string to;
+	std::list<std::string> to;
 	std::string subject;
 	std::string text;
 	long long msgNr;
