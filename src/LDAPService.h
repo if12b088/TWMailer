@@ -14,7 +14,7 @@ class LDAPService {
 public:
 	LDAPService();
 	virtual ~LDAPService();
-	virtual bool login(std::string username, std::string password) = 0;
+	virtual bool login(std::string username, std::string password);
 };
 
 #endif /* LDAPSERVICE_H_ */
