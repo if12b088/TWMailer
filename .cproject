@@ -26,7 +26,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.725009766" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.1929861455" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.other.other.99010884" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-D_DEBUG -c -fmessage-length=0 -std=c++11 -DLDAP_DEPRECATED" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.99010884" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-D_DEBUG -c -fmessage-length=0 -std=c++0x -DLDAP_DEPRECATED -pthread" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2089147067" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2140238600" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
@@ -35,12 +35,12 @@
 								</option>
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.500635062" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.debugging.level.1422179805" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" value="gnu.c.debugging.level.max" valueType="enumerated"/>
-								<option id="gnu.c.compiler.option.misc.other.1995553266" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -DLDAP_DEPRECATED" valueType="string"/>
+								<option id="gnu.c.compiler.option.misc.other.1995553266" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -DLDAP_DEPRECATED -pthread" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.2072687682" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.2119537362" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1186156718" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
-								<option id="gnu.cpp.link.option.flags.1485034358" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-std=c++11" valueType="string"/>
+								<option id="gnu.cpp.link.option.flags.1485034358" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-std=c++0x -pthread" valueType="string"/>
 								<option id="gnu.cpp.link.option.libs.1601612386" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="ldap"/>
 								</option>
