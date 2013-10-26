@@ -9,6 +9,7 @@
 #define MESSAGE_H_
 
 #include <string>
+#include <list>
 
 class Message {
 public:

@@ -16,7 +16,7 @@ MessageService::~MessageService() {
 	delete this->dao;
 }
 
-bool MessageService::sendMsg(std::string from, std::string to,
+bool MessageService::sendMsg(std::string from, std::list<std::string> to,
 		std::string subject, std::string text) {
 	Message msg;
 	msg.setFrom(from);

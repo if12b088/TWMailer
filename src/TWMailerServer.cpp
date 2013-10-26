@@ -117,11 +117,11 @@ int main(int argc, char *argv[]) {
 					printf("Subject: %s, size: %d\n", subject, sizeSubject);
 					printf("Text: %s, size: %d\n", text, sizeText);
 
-					if (service->sendMsg(from, to, subject, text)) {
+					/*if (service->sendMsg(from, to, subject, text)) {
 						strcpy(returnBuffer, "OK\n");
 					} else {
 						strcpy(returnBuffer, "ERR\n");
-					}
+					}*/
 
 				}
 				if (strcmp(buffer, "LIST\n") == 0) {
@@ -165,10 +165,7 @@ int main(int argc, char *argv[]) {
 
 					std::stringstream ss;
 
-					ss << "Nachricht mit der Nummer: " << msg.getMsgNr() << "\n"
-							<< msg.getFrom() << "\n" << msg.getTo() << "\n"
-							<< msg.getSubject() << "\n" << msg.getText()
-							<< "\n";
+					ss << "Nachricht mit der Nummer: " << msg.toString() << "\n";
 
 					strcpy(returnBuffer, ss.str().c_str());
 
