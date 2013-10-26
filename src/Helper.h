@@ -11,10 +11,14 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
+#include <string>
+#include <list>
 
 class Helper {
 public:
 	static ssize_t readline(int fd, char *vptr, size_t maxlen);
+	static std::list<std::string> splitString(std::string string,
+			std::string delimiter);
 private:
 	static ssize_t my_read(int fd, char *ptr);
 

@@ -11,6 +11,7 @@
 #include <string>
 #include <string.h>
 //#include <thread>
+#include "File.h"
 #include "MessageService.h"
 #include "Helper.h"
 
@@ -98,7 +99,6 @@ int main(int argc, char *argv[]) {
 		}
 		do {
 
-//			size = recv(new_socket, buffer, BUF - 1, 0);
 			size = Helper::readline(new_socket, buffer, BUF - 1);
 
 			if (size > 0) {
@@ -147,10 +147,17 @@ int main(int argc, char *argv[]) {
 					std::cout << "Subject: " << subject << ", size: " << subject.length() << std::endl;
 					std::cout << "Text: " << text << ", size: " << text.length() << std::endl;
 #endif
-					if (service->sendMsg(from, to, subject, text)) {
-						std::cout << "OK\n" << std::endl;
+
+					Message msg;
+					msg.setFrom(from);
+					msg.setTo(Helper::splitString(to, ";"));
+					msg.setSubject(subject);
+					msg.setText(text);
+
+					//TODO Hier sollte auch noch das Attachment ausgelesen und hinzugefügt werden
+
+					if (service->sendMsg(msg)) {
 						returnMsg = "OK\n";
-						//strcpy(returnBuffer, "OK\n");
 					} else {
 						returnMsg = "ERR\n";
 						//strcpy(returnBuffer, "ERR\n");

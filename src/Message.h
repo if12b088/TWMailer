@@ -10,12 +10,11 @@
 
 #include <string>
 #include <list>
+#include "File.h"
 
 class Message {
 public:
 	Message();
-	Message(std::string from, std::list<std::string> to, std::string subject,
-			std::string text);
 	virtual ~Message();
 	virtual std::string getFrom();
 	virtual void setFrom(std::string from);
@@ -27,13 +26,19 @@ public:
 	virtual void setText(std::string text);
 	virtual long long getMsgNr();
 	virtual void setMsgNr(long long msgNr);
+	virtual bool isFileAttached();
+	virtual void setFileAttached(bool fileAttached);
+	virtual void setFile(File* file);
+	virtual File* getFile();
 	virtual std::string toString();
 private:
+	long long msgNr;
 	std::string from;
 	std::list<std::string> to;
 	std::string subject;
 	std::string text;
-	long long msgNr;
+	bool fileAttached;
+	File* file;
 };
 
 #endif /* MESSAGE_H_ */

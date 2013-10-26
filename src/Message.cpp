@@ -8,20 +8,13 @@
 #include "Message.h"
 
 Message::Message() {
+	file = new File();
+	fileAttached = false;
 	msgNr = 0;
 }
 
-Message::Message(std::string from, std::list<std::string> to,
-		std::string subject, std::string text) {
-	this->from = from;
-	this->to = to;
-	this->subject = subject;
-	this->text = text;
-	this->msgNr = 0;
-}
-
 Message::~Message() {
-	// TODO Auto-generated destructor stub
+	//free(file);
 }
 
 std::string Message::getFrom() {
@@ -54,6 +47,18 @@ long long Message::getMsgNr() {
 void Message::setMsgNr(long long msgNr) {
 	this->msgNr = msgNr;
 }
+void Message::setFile(File* file) {
+	this->file = file;
+}
+File* Message::getFile() {
+	return this->file;
+}
+bool Message::isFileAttached() {
+	return this->fileAttached;
+}
+void Message::setFileAttached(bool fileAttached) {
+	this->fileAttached = fileAttached;
+}
 
 std::string Message::toString() {
 	std::string result;
@@ -66,6 +71,11 @@ std::string Message::toString() {
 	}
 	result.append("\n");
 	result.append(this->subject);
+	if (this->fileAttached == true) {
+		result.append("\n");
+		result.append("ATT: ");
+		result.append(file->getFilename());
+	}
 	result.append("\n");
 	result.append(this->text);
 	return result;

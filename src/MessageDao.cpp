@@ -17,6 +17,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <pthread.h>
+
+pthread_mutex_t msgNrMutex = PTHREAD_MUTEX_INITIALIZER;
 
 MessageDao::MessageDao(std::string dirPath) {
 	this->dirPath = dirPath;
@@ -28,8 +31,8 @@ MessageDao::~MessageDao() {
 
 bool MessageDao::saveMessage(Message msg) {
 	std::list<std::string> to = msg.getTo();
-	for (std::list<std::string>::iterator it = to.begin();
-			it != to.end(); it++) {
+	for (std::list<std::string>::iterator it = to.begin(); it != to.end();
+			it++) {
 
 		std::stringstream userPath;
 		userPath << this->dirPath << "/" << *it;
@@ -50,16 +53,33 @@ bool MessageDao::saveMessage(Message msg) {
 		}
 		closedir(dirp);
 
+		long long msgNr;
+
+		pthread_mutex_lock(&msgNrMutex);
 		struct timeval te;
 		gettimeofday(&te, NULL); // get current time
+		msgNr = te.tv_sec * 1000LL + te.tv_usec / 1000;
+		pthread_mutex_unlock(&msgNrMutex);
 
-		userPath << "/" << te.tv_sec * 1000LL + te.tv_usec / 1000 << ".msg";
+		userPath << "/" << msgNr << ".msg";
 
 		const char* fullPath = userPath.str().c_str();
 
 		std::fstream f(fullPath, std::ios::out);
 		f << msg.toString() << std::endl;
 		f.close();
+
+		if (msg.isFileAttached() == true) {
+			File* file = msg.getFile();
+			std::stringstream attachmentPath;
+			attachmentPath << this->dirPath << "/" << *it << "/" << msgNr << "_"
+					<< file->getFilename();
+
+			std::ofstream outfile(attachmentPath.str(), std::ofstream::binary);
+			outfile.write(file->getFile(), file->getFilesize());
+			outfile.close();
+		}
+
 	}
 	return true;
 }
@@ -120,6 +140,34 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 		msg.setTo(to);
 		getline(f, line);
 		msg.setSubject(line);
+		getline(f, line);
+		std::string prefix = "ATT: ";
+		if (line.substr(0, prefix.size()) == prefix) {
+			std::stringstream attPath;
+			std::string filename = line.substr(prefix.size());
+			attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
+					<< filename;
+			std::ifstream infile(attPath.str(), std::ifstream::binary);
+			// get size of file
+			infile.seekg(0, infile.end);
+			long size = infile.tellg();
+			infile.seekg(0);
+			// allocate memory for file content
+			char* buffer = new char[size];
+			// read content of infile
+			infile.read(buffer, size);
+
+			File* file = new File();
+			file->setFilename(filename);
+			file->setFilesize(size);
+			file->setFile(buffer);
+
+			msg.setFile(file);
+			msg.setFileAttached(true);
+
+			infile.close();
+
+		}
 		std::string text;
 		while (getline(f, line)) {
 			text.append(line);
@@ -131,14 +179,26 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 }
 
 bool MessageDao::delMessage(std::string username, long long msgNr) {
+	Message delMsg = readMessage(username, msgNr);
+
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
-
 	const char* path = userPath.str().c_str();
 
 	if (remove(path) != 0)
 		return false;
-	else
-		return true;
+
+	if (delMsg.isFileAttached() == true) {
+		std::stringstream attPath;
+		attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
+				<< delMsg.getFile()->getFilename();
+		const char* path = attPath.str().c_str();
+
+		if (remove(path) != 0) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
