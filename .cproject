@@ -26,7 +26,7 @@
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.725009766" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.1929861455" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
-								<option id="gnu.cpp.compiler.option.other.other.99010884" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-c -fmessage-length=0 -std=c++11 -DLDAP_DEPRECATED" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.other.other.99010884" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" value="-D_DEBUG -c -fmessage-length=0 -std=c++11 -DLDAP_DEPRECATED" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2089147067" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2140238600" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">

@@ -21,6 +21,13 @@ void printUsage(std::string programName) {
 	exit(EXIT_FAILURE);
 }
 
+std::string removeNewline(std::string s) {
+	if (!s.empty() && s[s.length() - 1] == '\n') {
+		s.erase(s.length() - 1);
+	}
+	return s;
+}
+
 int main(int argc, char *argv[]) {
 
 	// Ausgabe der Parameter
@@ -75,6 +82,7 @@ int main(int argc, char *argv[]) {
 
 	char buffer[BUF];
 	char returnBuffer[BUF];
+	std::string returnMsg;
 	int size;
 	//std::vector<std::thread> threads;
 
@@ -95,44 +103,72 @@ int main(int argc, char *argv[]) {
 
 			if (size > 0) {
 				buffer[size] = '\0';
-
+				//returnBuffer[0] = '\0';
+				returnMsg = "";
+				//SEND
 				if (strcmp(buffer, "SEND\n") == 0) {
-					char from[9];
-					char to[9];
-					char subject[82];
-					char text[82];
+					char fromChar[BUF];
+					std::string from;
+					char toChar[BUF];
+					std::string to;
+					char subjectChar[BUF];
+					std::string subject;
+					char textTempChar[BUF];
+					std::string textTempStr;
+					std::string text;
 
-					int sizeFrom = Helper::readline(new_socket, from, 9);
-					int sizeTo = Helper::readline(new_socket, to, 9);
-					int sizeSubject = Helper::readline(new_socket, subject, 81);
-					int sizeText = Helper::readline(new_socket, text, 81);
+					int sizeFrom = Helper::readline(new_socket, fromChar,
+					BUF - 1);
+					from = removeNewline(std::string(fromChar));
 
-					from[strlen(from) - 1] = '\0';
-					to[strlen(to) - 1] = '\0';
-					subject[strlen(subject) - 1] = '\0';
-					text[strlen(text) - 1] = '\0';
+					int sizeTo = Helper::readline(new_socket, toChar, BUF - 1);
+					to = removeNewline(std::string(toChar));
 
-					printf("From: %s, size: %d\n", from, sizeFrom);
-					printf("To: %s, size: %d\n", to, sizeTo);
-					printf("Subject: %s, size: %d\n", subject, sizeSubject);
-					printf("Text: %s, size: %d\n", text, sizeText);
+					int sizeSubject = Helper::readline(new_socket, subjectChar,
+					BUF - 1);
+					subject = removeNewline(std::string(subjectChar));
 
+					//int sizeText = Helper::readline(new_socket, text, 81);
+					do {
+						textTempStr = "";
+						textTempChar[0] = '\0';
+						int sizeText = Helper::readline(new_socket,
+								textTempChar, BUF - 1);
+						textTempStr = std::string(textTempChar);
+						if (textTempStr != ".\n") {
+							text.append(textTempStr);
+						}
+						std::cout << textTempStr << std::endl;
+
+					} while (textTempStr != ".\n");
+#ifdef _DEBUG
+					std::cout << "From: " << from << ", size: " << from.length() << std::endl;
+					std::cout << "To: " << to << ", size: " << to.length() << std::endl;
+					std::cout << "Subject: " << subject << ", size: " << subject.length() << std::endl;
+					std::cout << "Text: " << text << ", size: " << text.length() << std::endl;
+#endif
 					if (service->sendMsg(from, to, subject, text)) {
 						std::cout << "OK\n" << std::endl;
-						strcpy(returnBuffer, "OK\n");
+						returnMsg = "OK\n";
+						//strcpy(returnBuffer, "OK\n");
 					} else {
-						strcpy(returnBuffer, "ERR\n");
+						returnMsg = "ERR\n";
+						//strcpy(returnBuffer, "ERR\n");
 					}
 
 				}
+				//LIST
 				if (strcmp(buffer, "LIST\n") == 0) {
-					char user[9];
+					char userChar[BUF];
+					std::string user;
 
-					int sizeUser = Helper::readline(new_socket, user, 9);
+					int sizeUser = Helper::readline(new_socket, userChar,
+							BUF - 1);
+					user = removeNewline(std::string(userChar));
 
-					printf("User: %s, size: %d\n", user, sizeUser);
-
-					user[strlen(user) - 1] = '\0'; // \n am Schluss entfernen
+#ifdef _DEBUG
+					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+#endif
 
 					std::list<Message> msgList = service->listMsg(user);
 					std::stringstream ss;
@@ -146,50 +182,72 @@ int main(int argc, char *argv[]) {
 								<< "\n";
 					}
 
-					strcpy(returnBuffer, ss.str().c_str());
+					//strcpy(returnBuffer, ss.str().c_str());
+					returnMsg = ss.str();
 
 				}
+				//READ
 				if (strcmp(buffer, "READ\n") == 0) {
-					char user[9];
-					char nr[20];
+					char userChar[BUF];
+					std::string user;
+					char nrChar[BUF];
+					std::string nr;
 
-					int sizeUser = Helper::readline(new_socket, user, 9);
-					int sizeNr = Helper::readline(new_socket, nr, 20);
+					int sizeUser = Helper::readline(new_socket, userChar,
+							BUF - 1);
+					user = removeNewline(std::string(userChar));
 
-					user[strlen(user) - 1] = '\0';
-					nr[strlen(nr) - 1] = '\0';
+					int sizeNr = Helper::readline(new_socket, nrChar,
+							BUF - 1);
+					//TODO wirklich in string umwandeln
+					nr = removeNewline(std::string(nrChar));
+					nrChar[strlen(nrChar) - 1] = '\0';
 
-					printf("User: %s, size: %d\n", user, sizeUser);
-					printf("Nr: %s, size: %d\n", nr, sizeNr);
+#ifdef _DEBUG
+					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+					std::cout << "Nr: " << nr << ", size: " << nr.length() << std::endl;
+#endif
 
-					Message msg = service->readMsg(user, atol(nr));
+					Message msg = service->readMsg(user, atol(nrChar));
 
 					std::stringstream ss;
 
 					ss << "Nachricht mit der Nummer: " << msg.toString()
 							<< "\n";
 
-					strcpy(returnBuffer, ss.str().c_str());
+					//strcpy(returnBuffer, ss.str().c_str());
+
+					returnMsg = ss.str();
 
 				}
+				//DEL
 				if (strcmp(buffer, "DEL\n") == 0) {
-					char user[9];
-					char nr[20];
+					char userChar[BUF];
+					std::string user;
+					char nrChar[BUF];
+					std::string nr;
 
-					int sizeUser = Helper::readline(new_socket, user, 9);
-					int sizeNr = Helper::readline(new_socket, nr, 20);
+					int sizeUser = Helper::readline(new_socket, userChar,
+							BUF - 1);
+					user = removeNewline(std::string(userChar));
+					int sizeNr = Helper::readline(new_socket, nrChar,
+							BUF - 1);
+					//TODO wirklich in string umwandeln
+					nr = removeNewline(std::string(nrChar));
+					nrChar[strlen(nrChar) - 1] = '\0';
 
-					user[strlen(user) - 1] = '\0';
-					nr[strlen(nr) - 1] = '\0';
-
-					printf("User: %s, size: %d\n", user, sizeUser);
-					printf("Nr: %s, size: %d\n", nr, sizeNr);
+#ifdef _DEBUG
+					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+					std::cout << "Nr: " << nr << ", size: " << nr.length() << std::endl;
+#endif
 
 					//convert nr to long
-					if (service->deleteMsg(user, atol(nr))) {
-						strcpy(returnBuffer, "OK\n");
+					if (service->deleteMsg(user, atol(nrChar))) {
+						returnMsg = "OK\n";
+						//strcpy(returnBuffer, "OK\n");
 					} else {
-						strcpy(returnBuffer, "ERR\n");
+						returnMsg = "ERR\n";
+						//strcpy(returnBuffer, "ERR\n");
 					}
 				}
 
@@ -204,10 +262,15 @@ int main(int argc, char *argv[]) {
 
 			//answer
 
-			if (send(new_socket, returnBuffer, strlen(returnBuffer), 0) == -1) {
+			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0) == -1) {
 				perror("Send error");
 				return EXIT_FAILURE;
 			}
+
+//			if (send(new_socket, returnBuffer, strlen(returnBuffer), 0) == -1) {
+//				perror("Send error");
+//				return EXIT_FAILURE;
+//			}
 		} while (strncmp(buffer, "quit", 4) != 0);
 		close(new_socket);
 	}
