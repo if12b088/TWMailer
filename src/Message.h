@@ -26,6 +26,8 @@ public:
 	virtual void setText(std::string text);
 	virtual long long getMsgNr();
 	virtual void setMsgNr(long long msgNr);
+	virtual bool isFileAttached();
+	virtual void setFileAttached(bool fileAttached);
 	virtual void setFile(File* file);
 	virtual File* getFile();
 	virtual std::string toString();
@@ -35,6 +37,7 @@ private:
 	std::list<std::string> to;
 	std::string subject;
 	std::string text;
+	bool fileAttached;
 	File* file;
 };
 

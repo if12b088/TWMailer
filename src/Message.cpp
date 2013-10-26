@@ -9,11 +9,12 @@
 
 Message::Message() {
 	file = new File();
+	fileAttached = false;
 	msgNr = 0;
 }
 
 Message::~Message() {
-	free(file);
+	//free(file);
 }
 
 std::string Message::getFrom() {
@@ -52,6 +53,12 @@ void Message::setFile(File* file) {
 File* Message::getFile() {
 	return this->file;
 }
+bool Message::isFileAttached() {
+	return this->fileAttached;
+}
+void Message::setFileAttached(bool fileAttached) {
+	this->fileAttached = fileAttached;
+}
 
 std::string Message::toString() {
 	std::string result;
@@ -64,6 +71,11 @@ std::string Message::toString() {
 	}
 	result.append("\n");
 	result.append(this->subject);
+	if (this->fileAttached == true) {
+		result.append("\n");
+		result.append("ATT: ");
+		result.append(file->getFilename());
+	}
 	result.append("\n");
 	result.append(this->text);
 	return result;

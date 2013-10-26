@@ -8,7 +8,7 @@
 #include "File.h"
 
 File::~File() {
-	free(file);
+	delete[] file;
 }
 
 long long File::getFilesize() {
