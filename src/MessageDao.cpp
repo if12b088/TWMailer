@@ -174,14 +174,27 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 }
 
 bool MessageDao::delMessage(std::string username, long long msgNr) {
+	Message delMsg = readMessage(username, msgNr);
+
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
-
 	const char* path = userPath.str().c_str();
 
 	if (remove(path) != 0)
 		return false;
-	else
-		return true;
+
+
+	if (delMsg.isFileAttached() == true) {
+		std::stringstream attPath;
+		attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
+				<< delMsg.getFile()->getFilename();
+		const char* path = attPath.str().c_str();
+
+		if (remove(path) != 0) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
