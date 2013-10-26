@@ -118,6 +118,7 @@ int main(int argc, char *argv[]) {
 					printf("Text: %s, size: %d\n", text, sizeText);
 
 					if (service->sendMsg(from, to, subject, text)) {
+						std::cout << "OK\n" << std::endl;
 						strcpy(returnBuffer, "OK\n");
 					} else {
 						strcpy(returnBuffer, "ERR\n");
@@ -165,7 +166,8 @@ int main(int argc, char *argv[]) {
 
 					std::stringstream ss;
 
-					ss << "Nachricht mit der Nummer: " << msg.toString() << "\n";
+					ss << "Nachricht mit der Nummer: " << msg.toString()
+							<< "\n";
 
 					strcpy(returnBuffer, ss.str().c_str());
 

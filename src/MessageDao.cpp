@@ -27,8 +27,9 @@ MessageDao::~MessageDao() {
 }
 
 bool MessageDao::saveMessage(Message msg) {
-	for (std::list<std::string>::iterator it = msg.getTo().begin();
-			it != msg.getTo().end(); it++) {
+	std::list<std::string> to = msg.getTo();
+	for (std::list<std::string>::iterator it = to.begin();
+			it != to.end(); it++) {
 
 		std::stringstream userPath;
 		userPath << this->dirPath << "/" << *it;
@@ -59,7 +60,6 @@ bool MessageDao::saveMessage(Message msg) {
 		std::fstream f(fullPath, std::ios::out);
 		f << msg.toString() << std::endl;
 		f.close();
-
 	}
 	return true;
 }
@@ -107,14 +107,17 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 		getline(f, line);
 		msg.setFrom(line);
 		getline(f, line);
+		std::list<std::string> to;
 		std::string delimiter = ";";
 		size_t pos = 0;
 		std::string token;
 		while ((pos = line.find(delimiter)) != std::string::npos) {
 			token = line.substr(0, pos);
-			msg.getTo().push_back(token);
+			to.push_back(token);
 			line.erase(0, pos + delimiter.length());
 		}
+		to.push_back(line);
+		msg.setTo(to);
 		getline(f, line);
 		msg.setSubject(line);
 		std::string text;
