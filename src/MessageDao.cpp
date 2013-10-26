@@ -17,6 +17,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <pthread.h>
+
+pthread_mutex_t msgNrMutex = PTHREAD_MUTEX_INITIALIZER;
 
 MessageDao::MessageDao(std::string dirPath) {
 	this->dirPath = dirPath;
@@ -52,9 +55,11 @@ bool MessageDao::saveMessage(Message msg) {
 
 		long long msgNr;
 
+		pthread_mutex_lock(&msgNrMutex);
 		struct timeval te;
 		gettimeofday(&te, NULL); // get current time
 		msgNr = te.tv_sec * 1000LL + te.tv_usec / 1000;
+		pthread_mutex_unlock(&msgNrMutex);
 
 		userPath << "/" << msgNr << ".msg";
 
@@ -182,7 +187,6 @@ bool MessageDao::delMessage(std::string username, long long msgNr) {
 
 	if (remove(path) != 0)
 		return false;
-
 
 	if (delMsg.isFileAttached() == true) {
 		std::stringstream attPath;
