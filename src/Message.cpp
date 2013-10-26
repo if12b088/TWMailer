@@ -8,20 +8,12 @@
 #include "Message.h"
 
 Message::Message() {
+	file = new File();
 	msgNr = 0;
 }
 
-Message::Message(std::string from, std::list<std::string> to,
-		std::string subject, std::string text) {
-	this->from = from;
-	this->to = to;
-	this->subject = subject;
-	this->text = text;
-	this->msgNr = 0;
-}
-
 Message::~Message() {
-	// TODO Auto-generated destructor stub
+	free(file);
 }
 
 std::string Message::getFrom() {
@@ -53,6 +45,12 @@ long long Message::getMsgNr() {
 }
 void Message::setMsgNr(long long msgNr) {
 	this->msgNr = msgNr;
+}
+void Message::setFile(File* file) {
+	this->file = file;
+}
+File* Message::getFile() {
+	return this->file;
 }
 
 std::string Message::toString() {

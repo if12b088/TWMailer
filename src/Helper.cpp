@@ -13,8 +13,7 @@ ssize_t Helper::my_read(int fd, char *ptr) {
 	static char *read_ptr;
 	static char read_buf[MAXLINE];
 	if (read_cnt <= 0) {
-		again:
-		if ((read_cnt = read(fd, read_buf, sizeof(read_buf))) < 0) {
+		again: if ((read_cnt = read(fd, read_buf, sizeof(read_buf))) < 0) {
 			if (errno == EINTR)
 				goto again;
 			return (-1);
@@ -34,7 +33,7 @@ ssize_t Helper::readline(int fd, char *vptr, size_t maxlen) {
 	for (n = 1; n < maxlen; n++) {
 		if ((rc = Helper::my_read(fd, &c)) == 1) {
 			*ptr++ = c;
-			if (c == '\n'){
+			if (c == '\n') {
 				//*(--ptr) = '\0'; // remove '\n'
 				break;
 			}
@@ -48,4 +47,20 @@ ssize_t Helper::readline(int fd, char *vptr, size_t maxlen) {
 	};
 	*ptr = 0;
 	return (n);
+}
+
+std::list<std::string> Helper::splitString(std::string string,
+		std::string delimiter) {
+	std::list<std::string> list;
+	size_t pos = 0;
+	std::string token;
+	while ((pos = string.find(delimiter)) != std::string::npos) {
+		token = string.substr(0, pos);
+		list.push_back(token);
+		string.erase(0, pos + delimiter.length());
+	}
+	if (string.size() != 0) {
+		list.push_back(string);
+	}
+	return list;
 }
