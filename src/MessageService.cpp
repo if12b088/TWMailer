@@ -16,11 +16,19 @@ MessageService::~MessageService() {
 	delete this->dao;
 }
 
-bool MessageService::sendMsg(std::string from, std::list<std::string> to,
+bool MessageService::sendMsg(std::string from, std::string to,
 		std::string subject, std::string text) {
+
 	Message msg;
 	msg.setFrom(from);
-	msg.setTo(to);
+	std::string delimiter = ";";
+	size_t pos = 0;
+	std::string token;
+	while ((pos = to.find(delimiter)) != std::string::npos) {
+		token = to.substr(0, pos);
+		msg.getTo().push_back(token);
+		to.erase(0, pos + delimiter.length());
+	}
 	msg.setSubject(subject);
 	msg.setText(text);
 	return this->dao->saveMessage(msg);

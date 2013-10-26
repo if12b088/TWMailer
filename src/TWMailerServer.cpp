@@ -117,11 +117,11 @@ int main(int argc, char *argv[]) {
 					printf("Subject: %s, size: %d\n", subject, sizeSubject);
 					printf("Text: %s, size: %d\n", text, sizeText);
 
-					/*if (service->sendMsg(from, to, subject, text)) {
+					if (service->sendMsg(from, to, subject, text)) {
 						strcpy(returnBuffer, "OK\n");
 					} else {
 						strcpy(returnBuffer, "ERR\n");
-					}*/
+					}
 
 				}
 				if (strcmp(buffer, "LIST\n") == 0) {

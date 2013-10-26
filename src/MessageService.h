@@ -16,7 +16,7 @@ class MessageService {
 public:
 	MessageService(MessageDao* dao);
 	virtual ~MessageService();
-	virtual bool sendMsg(std::string from, std::list<std::string> to, std::string subject,
+	virtual bool sendMsg(std::string from, std::string to, std::string subject,
 			std::string msg);
 	virtual std::list<Message> listMsg(std::string username);
 	virtual Message readMsg(std::string username, long long msgNr);
