@@ -6,6 +6,7 @@
  */
 
 #include "Message.h"
+#include <iostream>
 
 Message::Message() {
 	file = new File();
@@ -15,6 +16,10 @@ Message::Message() {
 
 Message::~Message() {
 	//free(file);
+	std::cout << "deleting file pointer" << std::endl;
+	//delete(file);
+	std::cout << "deleting file pointer after" << std::endl;
+
 }
 
 std::string Message::getFrom() {

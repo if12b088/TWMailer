@@ -11,7 +11,8 @@
 #include <string>
 #include <string.h>
 #include <thread>
-#include <vector>
+//#include <vector>
+#include <list>
 #include "File.h"
 #include "MessageService.h"
 #include "Helper.h"
@@ -283,20 +284,17 @@ int main(int argc, char *argv[]) {
 
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 
-	//std::vector<pthread_t> threads;
-
 	//std::vector<std::thread> threads;
+	std::list<std::thread> threads;
 
 	while (1) {
 		printf("Waiting for connections...\n");
 		int new_socket = accept(create_socket, (struct sockaddr *) &cliaddress,
 				&addrlen);
 
-		//pthread_t t = 0;
-		//pthread_create(&t, NULL, handleConnection, new_socket, &cliaddress, service);
 
-		handleConnection(new_socket, service);
-		//threads.push_back(t);
+		//handleConnection(new_socket, service);
+		threads.push_back(std::thread(handleConnection, new_socket, service));
 	}
 	close(create_socket);
 	return EXIT_SUCCESS;
