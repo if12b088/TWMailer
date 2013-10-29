@@ -19,7 +19,7 @@
 #include <sys/time.h>
 #include <pthread.h>
 
-pthread_mutex_t msgNrMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t msgNrMutex = PTHREAD_MUTEX_INITIALIZER;
 
 MessageDao::MessageDao(std::string dirPath) {
 	this->dirPath = dirPath;
@@ -29,8 +29,8 @@ MessageDao::~MessageDao() {
 	// TODO Auto-generated destructor stub
 }
 
-bool MessageDao::saveMessage(Message msg) {
-	std::list<std::string> to = msg.getTo();
+bool MessageDao::saveMessage(Message* msg) {
+	std::list<std::string> to = msg->getTo();
 	for (std::list<std::string>::iterator it = to.begin(); it != to.end();
 			it++) {
 
@@ -66,11 +66,11 @@ bool MessageDao::saveMessage(Message msg) {
 		const char* fullPath = userPath.str().c_str();
 
 		std::fstream f(fullPath, std::ios::out);
-		f << msg.toString() << std::endl;
+		f << msg->toString() << std::endl;
 		f.close();
 
-		if (msg.isFileAttached() == true) {
-			File* file = msg.getFile();
+		if (msg->isFileAttached() == true) {
+			File* file = msg->getFile();
 			std::stringstream attachmentPath;
 			attachmentPath << this->dirPath << "/" << *it << "/" << msgNr << "_"
 					<< file->getFilename();
@@ -84,13 +84,13 @@ bool MessageDao::saveMessage(Message msg) {
 	return true;
 }
 
-std::list<Message> MessageDao::loadMessages(std::string username) {
+std::list<Message*> MessageDao::loadMessages(std::string username) {
 	std::string path;
 	path.append(this->dirPath);
 	path.append("/");
 	path.append(username);
 
-	std::list<Message> list;
+	std::list<Message*> list;
 
 	DIR *dirp;
 	struct dirent* dirent;
@@ -102,7 +102,7 @@ std::list<Message> MessageDao::loadMessages(std::string username) {
 					&& strcmp(filename + filename_len - 4, ".msg") == 0) {
 				char* p;
 				p = strtok(filename, ".");
-				Message msg = this->readMessage(username, atoll(p));
+				Message* msg = this->readMessage(username, atoll(p));
 				list.push_back(msg);
 			}
 		}
@@ -112,12 +112,12 @@ std::list<Message> MessageDao::loadMessages(std::string username) {
 	return list;
 }
 
-Message MessageDao::readMessage(std::string username, long long msgNr) {
+Message* MessageDao::readMessage(std::string username, long long msgNr) {
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 
-	Message msg;
-	msg.setMsgNr(msgNr);
+	Message* msg = new Message();
+	msg->setMsgNr(msgNr);
 
 	const char* path = userPath.str().c_str();
 
@@ -125,7 +125,7 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 	std::ifstream f(path);
 	if (f.is_open()) {
 		getline(f, line);
-		msg.setFrom(line);
+		msg->setFrom(line);
 		getline(f, line);
 		std::list<std::string> to;
 		std::string delimiter = ";";
@@ -137,9 +137,9 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 			line.erase(0, pos + delimiter.length());
 		}
 		to.push_back(line);
-		msg.setTo(to);
+		msg->setTo(to);
 		getline(f, line);
-		msg.setSubject(line);
+		msg->setSubject(line);
 		getline(f, line);
 		std::string prefix = "ATT: ";
 		if (line.substr(0, prefix.size()) == prefix) {
@@ -162,8 +162,8 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 			file->setFilesize(size);
 			file->setFile(buffer);
 
-			msg.setFile(file);
-			msg.setFileAttached(true);
+			msg->setFile(file);
+			msg->setFileAttached(true);
 
 			infile.close();
 
@@ -172,14 +172,14 @@ Message MessageDao::readMessage(std::string username, long long msgNr) {
 		while (getline(f, line)) {
 			text.append(line);
 		}
-		msg.setText(text);
+		msg->setText(text);
 		f.close();
 	}
 	return msg;
 }
 
 bool MessageDao::delMessage(std::string username, long long msgNr) {
-	Message delMsg = readMessage(username, msgNr);
+	Message* delMsg = readMessage(username, msgNr);
 
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
@@ -188,17 +188,19 @@ bool MessageDao::delMessage(std::string username, long long msgNr) {
 	if (remove(path) != 0)
 		return false;
 
-	if (delMsg.isFileAttached() == true) {
+	if (delMsg->isFileAttached() == true) {
 		std::stringstream attPath;
 		attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
-				<< delMsg.getFile()->getFilename();
+				<< delMsg->getFile()->getFilename();
 		const char* path = attPath.str().c_str();
 
 		if (remove(path) != 0) {
+			delete (delMsg);
 			return false;
 		}
 	}
 
+	delete (delMsg);
 	return true;
 }
 

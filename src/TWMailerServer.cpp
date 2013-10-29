@@ -65,15 +65,14 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string text;
 
 					int sizeFrom = Helper::readline(new_socket, fromChar,
-					BUF - 1);
+							BUF - 1);
 					from = removeNewline(std::string(fromChar));
 
-					int sizeTo = Helper::readline(new_socket, toChar,
-					BUF - 1);
+					int sizeTo = Helper::readline(new_socket, toChar, BUF - 1);
 					to = removeNewline(std::string(toChar));
 
 					int sizeSubject = Helper::readline(new_socket, subjectChar,
-					BUF - 1);
+							BUF - 1);
 					subject = removeNewline(std::string(subjectChar));
 
 					//int sizeText = Helper::readline(new_socket, text, 81);
@@ -96,11 +95,11 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::cout << "Text: " << text << ", size: " << text.length() << std::endl;
 #endif
 
-					Message msg;
-					msg.setFrom(from);
-					msg.setTo(Helper::splitString(to, ";"));
-					msg.setSubject(subject);
-					msg.setText(text);
+					Message* msg = new Message();
+					msg->setFrom(from);
+					msg->setTo(Helper::splitString(to, ";"));
+					msg->setSubject(subject);
+					msg->setText(text);
 
 					//TODO Hier sollte auch noch das Attachment ausgelesen und hinzugefügt werden
 
@@ -111,6 +110,8 @@ int handleConnection(int new_socket, MessageService* service) {
 						//strcpy(returnBuffer, "ERR\n");
 					}
 
+					delete(msg);
+
 				}
 				//LIST
 				if (strcmp(buffer, "LIST\n") == 0) {
@@ -118,23 +119,24 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string user;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
 					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
 #endif
 
-					std::list<Message> msgList = service->listMsg(user);
+					std::list<Message*> msgList = service->listMsg(user);
 					std::stringstream ss;
 
 					ss << msgList.size() << "\n";
 
-					for (std::list<Message>::iterator it = msgList.begin();
+					for (std::list<Message*>::iterator it = msgList.begin();
 							it != msgList.end(); it++) {
-						Message msg = *it;
-						ss << msg.getMsgNr() << ": " << msg.getSubject()
+						Message* msg = *it;
+						ss << msg->getMsgNr() << ": " << msg->getSubject()
 								<< "\n";
+						delete(msg);
 					}
 
 					//strcpy(returnBuffer, ss.str().c_str());
@@ -149,11 +151,10 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 
-					int sizeNr = Helper::readline(new_socket, nrChar,
-					BUF - 1);
+					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
 					//TODO wirklich in string umwandeln
 					nr = removeNewline(std::string(nrChar));
 					nrChar[strlen(nrChar) - 1] = '\0';
@@ -163,16 +164,16 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::cout << "Nr: " << nr << ", size: " << nr.length() << std::endl;
 #endif
 
-					Message msg = service->readMsg(user, atol(nrChar));
+					Message* msg = service->readMsg(user, atol(nrChar));
 
 					std::stringstream ss;
 
-					ss << "Nachricht mit der Nummer: " << msg.toString()
+					ss << "Nachricht mit der Nummer: " << msg->toString()
 							<< "\n";
 
-					//strcpy(returnBuffer, ss.str().c_str());
-
 					returnMsg = ss.str();
+
+					delete(msg);
 
 				}
 				//DEL
@@ -183,10 +184,9 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
-					int sizeNr = Helper::readline(new_socket, nrChar,
-					BUF - 1);
+					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
 					//TODO wirklich in string umwandeln
 					nr = removeNewline(std::string(nrChar));
 					nrChar[strlen(nrChar) - 1] = '\0';
@@ -291,7 +291,6 @@ int main(int argc, char *argv[]) {
 		printf("Waiting for connections...\n");
 		int new_socket = accept(create_socket, (struct sockaddr *) &cliaddress,
 				&addrlen);
-
 
 		//handleConnection(new_socket, service);
 		threads.push_back(std::thread(handleConnection, new_socket, service));

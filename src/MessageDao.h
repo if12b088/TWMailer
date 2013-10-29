@@ -16,9 +16,9 @@ class MessageDao {
 public:
 	MessageDao(std::string dirPath);
 	virtual ~MessageDao();
-	virtual bool saveMessage(Message msg);
-	virtual std::list<Message> loadMessages(std::string username);
-	virtual Message readMessage(std::string username, long long msgNr);
+	virtual bool saveMessage(Message* msg);
+	virtual std::list<Message*> loadMessages(std::string username);
+	virtual Message* readMessage(std::string username, long long msgNr);
 	virtual bool delMessage(std::string username, long long msgNr);
 private:
 	std::string dirPath;

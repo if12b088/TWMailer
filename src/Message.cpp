@@ -15,11 +15,7 @@ Message::Message() {
 }
 
 Message::~Message() {
-	//free(file);
-	std::cout << "deleting file pointer" << std::endl;
-	//delete(file);
-	std::cout << "deleting file pointer after" << std::endl;
-
+	delete (file);
 }
 
 std::string Message::getFrom() {
