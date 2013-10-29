@@ -16,6 +16,8 @@
 #include "File.h"
 #include "MessageService.h"
 #include "Helper.h"
+#include "LDAPService.h"
+#include "IPAdress.h"
 
 #define BUF 1024
 
@@ -31,12 +33,15 @@ std::string removeNewline(std::string s) {
 	return s;
 }
 
-int handleConnection(int new_socket, MessageService* service) {
+int handleConnection(int new_socket, MessageService* service,
+		struct sockaddr_in* cliaddress, std::list<IPAdress> blackList) {
 
 	char buffer[BUF];
 	char returnBuffer[BUF];
 	std::string returnMsg;
 	int size;
+	int countLogin = 0;
+	LDAPService* ldap = new LDAPService();
 
 	if (new_socket > 0) {
 //		printf("Client connected from %s:%d...\n",
@@ -45,13 +50,59 @@ int handleConnection(int new_socket, MessageService* service) {
 		send(new_socket, buffer, strlen(buffer), 0);
 
 		do {
+			if (countLogin > 3) {
+				//IP sperren
+				//IPAdress IP = new IPAdress();
+				//IP->setIPAdress(inet_ntoa cliaddress);
+				//blackList.pop_back();
+				close(new_socket);
+				return -1;
+			}
 
 			size = Helper::readline(new_socket, buffer, BUF - 1);
+
+#ifdef _DEBUG
+			std::cout << buffer << std::endl;
+#endif
 
 			if (size > 0) {
 				buffer[size] = '\0';
 				//returnBuffer[0] = '\0';
 				returnMsg = "";
+
+				//LOGIN
+				if (strcmp(buffer, "LOGIN\n") == 0) {
+
+					char userChar[BUF];
+					std::string user;
+					char passwdChar[BUF];
+					std::string passwd;
+
+					int sizeUser = Helper::readline(new_socket, userChar,
+					BUF - 1);
+					user = removeNewline(std::string(userChar));
+
+					int sizePasswd = Helper::readline(new_socket, passwdChar,
+					BUF - 1);
+					passwd = removeNewline(std::string(passwdChar));
+
+#ifdef _DEBUG
+					std::cout << "user: " << user << std::endl;
+					std::cout << "passwd: " << passwd << std::endl;
+#endif
+					bool b = ldap->login(user, passwd);
+					std::cout << "bool: " << b << std::endl;
+
+					if (ldap->login(user, passwd)) {
+						std::cout << "OK" << std::endl;
+						returnMsg = "OK\n";
+					} else {
+						std::cout << "ERR" << std::endl;
+						countLogin++;
+						returnMsg = "ERR\n";
+					}
+				}
+
 				//SEND
 				if (strcmp(buffer, "SEND\n") == 0) {
 					char fromChar[BUF];
@@ -65,14 +116,14 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string text;
 
 					int sizeFrom = Helper::readline(new_socket, fromChar,
-							BUF - 1);
+					BUF - 1);
 					from = removeNewline(std::string(fromChar));
 
 					int sizeTo = Helper::readline(new_socket, toChar, BUF - 1);
 					to = removeNewline(std::string(toChar));
 
 					int sizeSubject = Helper::readline(new_socket, subjectChar,
-							BUF - 1);
+					BUF - 1);
 					subject = removeNewline(std::string(subjectChar));
 
 					//int sizeText = Helper::readline(new_socket, text, 81);
@@ -89,10 +140,10 @@ int handleConnection(int new_socket, MessageService* service) {
 
 					} while (textTempStr != ".\n");
 #ifdef _DEBUG
-					std::cout << "From: " << from << ", size: " << from.length() << std::endl;
-					std::cout << "To: " << to << ", size: " << to.length() << std::endl;
-					std::cout << "Subject: " << subject << ", size: " << subject.length() << std::endl;
-					std::cout << "Text: " << text << ", size: " << text.length() << std::endl;
+					std::cout << "From: " << from << std::endl;
+					std::cout << "To: " << to << std::endl;
+					std::cout << "Subject: " << subject << std::endl;
+					std::cout << "Text: " << text << std::endl;
 #endif
 
 					Message* msg = new Message();
@@ -110,7 +161,7 @@ int handleConnection(int new_socket, MessageService* service) {
 						//strcpy(returnBuffer, "ERR\n");
 					}
 
-					delete(msg);
+					delete (msg);
 
 				}
 				//LIST
@@ -119,7 +170,7 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string user;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-							BUF - 1);
+					BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
@@ -136,7 +187,7 @@ int handleConnection(int new_socket, MessageService* service) {
 						Message* msg = *it;
 						ss << msg->getMsgNr() << ": " << msg->getSubject()
 								<< "\n";
-						delete(msg);
+						delete (msg);
 					}
 
 					//strcpy(returnBuffer, ss.str().c_str());
@@ -151,7 +202,7 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-							BUF - 1);
+					BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
@@ -173,7 +224,7 @@ int handleConnection(int new_socket, MessageService* service) {
 
 					returnMsg = ss.str();
 
-					delete(msg);
+					delete (msg);
 
 				}
 				//DEL
@@ -184,7 +235,7 @@ int handleConnection(int new_socket, MessageService* service) {
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-							BUF - 1);
+					BUF - 1);
 					user = removeNewline(std::string(userChar));
 					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
 					//TODO wirklich in string umwandeln
@@ -235,10 +286,12 @@ int handleConnection(int new_socket, MessageService* service) {
 int main(int argc, char *argv[]) {
 
 	// Ausgabe der Parameter
+#ifdef _DEBUG
 	std::cout << "argv0: " << argv[0] << std::endl;
 	std::cout << "argv1: " << argv[1] << std::endl;
 	std::cout << "argv2: " << argv[2] << std::endl;
 	std::cout << "argc: " << argc << std::endl;
+#endif
 
 	if (argc != 3) {
 		printUsage(argv[0]);
@@ -256,6 +309,8 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in address, cliaddress;
 
 	int create_socket;
+
+	std::list<IPAdress> blackList;
 
 	if ((create_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 		perror("Socket error");
@@ -293,8 +348,11 @@ int main(int argc, char *argv[]) {
 				&addrlen);
 
 		//handleConnection(new_socket, service);
-		threads.push_back(std::thread(handleConnection, new_socket, service));
+		threads.push_back(
+				std::thread(handleConnection, new_socket, service, &cliaddress,
+						blackList));
 	}
 	close(create_socket);
+	//delete(IPAdress);
 	return EXIT_SUCCESS;
 }
