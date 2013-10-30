@@ -67,6 +67,7 @@ bool LDAPService::login(std::string username, std::string password) {
 
 	if (ldap_count_entries(ld, result) != 1) {
 		std::cout << "Es wurde nicht genau ein Ergebnis gefunden" << std::endl;
+		return false;
 	}
 
 	for (e = ldap_first_entry(ld, result); e != NULL;
