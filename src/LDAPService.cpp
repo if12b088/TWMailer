@@ -13,7 +13,8 @@
 #include <sstream>
 #include "LDAPService.h"
 
-#define LDAP_HOST "ldap.technikum-wien.at"
+//#define LDAP_HOST "ldap.technikum-wien.at"
+#define LDAP_HOST "10.127.0.11"
 #define LDAP_PORT 389
 #define SEARCHBASE "dc=technikum-wien,dc=at"
 #define SCOPE LDAP_SCOPE_SUBTREE
