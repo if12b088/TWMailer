@@ -32,7 +32,7 @@ std::string removeNewline(std::string s) {
 	return s;
 }
 
-int handleConnection(int new_socket, MessageService* service,
+void handleConnection(int new_socket, MessageService* service,
 		BlockedUserService* blockedUser, struct sockaddr_in* cliaddress) {
 
 	char buffer[BUF];
@@ -69,18 +69,19 @@ int handleConnection(int new_socket, MessageService* service,
 					std::string passwd;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 					int sizePasswd = Helper::readline(new_socket, passwdChar,
-					BUF - 1);
+							BUF - 1);
 					passwd = removeNewline(std::string(passwdChar));
 
 					bool b;
-					//b = ldap->login(user, passwd);
 					// LDAP TEST
 					if (user == "if12b088") {
 						b = true;
+					} else {
+						b = ldap->login(user, passwd);
 					}
 
 					if (b) {
@@ -100,10 +101,10 @@ int handleConnection(int new_socket, MessageService* service,
 							if (send(new_socket, returnMsg.c_str(),
 									returnMsg.length(), 0) == -1) {
 								perror("Send error");
-								return EXIT_FAILURE;
+								return;
 							}
 							close(new_socket);
-							return -1;
+							return;
 						} else {
 							returnMsg = "ERR\n";
 						}
@@ -123,14 +124,14 @@ int handleConnection(int new_socket, MessageService* service,
 					std::string text;
 
 					int sizeFrom = Helper::readline(new_socket, fromChar,
-					BUF - 1);
+							BUF - 1);
 					from = removeNewline(std::string(fromChar));
 
 					int sizeTo = Helper::readline(new_socket, toChar, BUF - 1);
 					to = removeNewline(std::string(toChar));
 
 					int sizeSubject = Helper::readline(new_socket, subjectChar,
-					BUF - 1);
+							BUF - 1);
 					subject = removeNewline(std::string(subjectChar));
 
 					//int sizeText = Helper::readline(new_socket, text, 81);
@@ -177,7 +178,7 @@ int handleConnection(int new_socket, MessageService* service,
 					std::string user;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
@@ -209,7 +210,7 @@ int handleConnection(int new_socket, MessageService* service,
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 
 					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
@@ -242,7 +243,7 @@ int handleConnection(int new_socket, MessageService* service,
 					std::string nr;
 
 					int sizeUser = Helper::readline(new_socket, userChar,
-					BUF - 1);
+							BUF - 1);
 					user = removeNewline(std::string(userChar));
 					int sizeNr = Helper::readline(new_socket, nrChar, BUF - 1);
 					//TODO wirklich in string umwandeln
@@ -270,14 +271,14 @@ int handleConnection(int new_socket, MessageService* service,
 				break;
 			} else {
 				perror("recv error");
-				return EXIT_FAILURE;
+				return;
 			}
 
 			//answer
 			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0)
 					== -1) {
 				perror("Send error");
-				return EXIT_FAILURE;
+				return;
 			}
 
 		} while (strncmp(buffer, "quit", 4) != 0);
@@ -305,10 +306,10 @@ int main(int argc, char *argv[]) {
 	}
 	std::string dirPath = argv[2];
 
-	MessageDao* dao = new MessageDao(dirPath.c_str());
+	MessageDao* dao = new MessageDao(dirPath);
 	MessageService* service = new MessageService(dao);
 
-	BlockedUserService* blockedUser = new BlockedUserService();
+	BlockedUserService* blockedUser = new BlockedUserService(dirPath);
 
 	struct sockaddr_in address, cliaddress;
 
