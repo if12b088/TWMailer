@@ -69,15 +69,19 @@ void handleConnection(int new_socket, MessageService* service,
 					char passwdChar[BUF];
 					std::string passwd;
 
+
 					Helper::readline(new_socket, userChar,
 					BUF - 1);
+
 					user = removeNewline(std::string(userChar));
+
 
 					Helper::readline(new_socket, passwdChar,
 					BUF - 1);
+
 					passwd = removeNewline(std::string(passwdChar));
 
-					// LDAP TEST
+
 					bool b;
 					if (user == "i") {
 						b = true;
@@ -130,6 +134,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, fromChar,
 					BUF - 1);
+
 					from = removeNewline(std::string(fromChar));
 
 					int sizeTo = 1;
@@ -140,6 +145,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, subjectChar,
 					BUF - 1);
+
 					subject = removeNewline(std::string(subjectChar));
 
 					char lastChar = 0;
@@ -249,6 +255,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, userChar,
 					BUF - 1);
+
 					user = removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
@@ -279,6 +286,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, userChar,
 					BUF - 1);
+
 					user = removeNewline(std::string(userChar));
 
 					Helper::readline(new_socket, nrChar, BUF - 1);
@@ -308,6 +316,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, userChar,
 					BUF - 1);
+
 					user = removeNewline(std::string(userChar));
 					Helper::readline(new_socket, nrChar, BUF - 1);
 					nrChar[strlen(nrChar) - 1] = '\0';
@@ -371,10 +380,10 @@ int main(int argc, char *argv[]) {
 	}
 	std::string dirPath = argv[2];
 
-	MessageDao* dao = new MessageDao(dirPath.c_str());
+	MessageDao* dao = new MessageDao(dirPath);
 	MessageService* service = new MessageService(dao);
 
-	BlockedUserService* blockedUser = new BlockedUserService();
+	BlockedUserService* blockedUser = new BlockedUserService(dirPath);
 
 	struct sockaddr_in address, cliaddress;
 
