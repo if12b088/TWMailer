@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <string.h>
 #include <thread>
@@ -79,7 +80,7 @@ int handleConnection(int new_socket, MessageService* service,
 					bool b;
 					//b = ldap->login(user, passwd);
 					// LDAP TEST
-					if (user == "if12b088") {
+					if (user == "i") {
 						b = true;
 					}
 
@@ -121,6 +122,11 @@ int handleConnection(int new_socket, MessageService* service,
 					char textTempChar[BUF];
 					std::string textTempStr;
 					std::string text;
+					char fileSizeChar[BUF];
+					long long fileSize;
+					char fileNameChar[BUF];
+					std::string fileName;
+					char* file;
 
 					int sizeFrom = Helper::readline(new_socket, fromChar,
 					BUF - 1);
@@ -146,28 +152,81 @@ int handleConnection(int new_socket, MessageService* service,
 						std::cout << textTempStr << std::endl;
 
 					} while (textTempStr != ".\n");
+
+					int sizeFileSize = Helper::readline(new_socket,
+							fileSizeChar,
+							BUF - 1);
+					fileSize = atoll(fileSizeChar);
+
 #ifdef _DEBUG
-					std::cerr << "From: " << from << std::endl;
-					std::cerr << "To: " << to << std::endl;
-					std::cerr << "Subject: " << subject << std::endl;
-					std::cerr << "Text: " << text << std::endl;
+					std::cout << "From: " << from << std::endl;
+					std::cout << "To: " << to << std::endl;
+					std::cout << "Subject: " << subject << std::endl;
+					std::cout << "Text: " << text << std::endl;
+					std::cout << "FileSize: " << fileSize << std::endl;
 #endif
 
+					if (send(new_socket, "Protokoll OK\n", 13, 0)
+							== -1) {
+						perror("Send error");
+						return EXIT_FAILURE;
+					}
+
 					Message* msg = new Message();
+					File* fileObj = new File();
 					msg->setFrom(from);
 					msg->setTo(Helper::splitString(to, ";"));
 					msg->setSubject(subject);
 					msg->setText(text);
+					msg->setFileAttached(false);
 
 					//TODO Hier sollte auch noch das Attachment ausgelesen und hinzugefügt werden
 
+					if (fileSize != 0) {
+						//ATTACHMENT vorhanden
+						msg->setFileAttached(true);
+						fileObj->setFilesize(fileSize);
+
+						int sizeFileName = Helper::readline(new_socket,
+								fileNameChar,
+								BUF - 1);
+						fileName = removeNewline(std::string(fileNameChar));
+						fileObj->setFilename(fileName);
+#ifdef _DEBUG
+						std::cout << "FileName: " << fileName << std::endl;
+#endif
+						char* file = new char[fileSize];
+						int toRead;
+						char* pos = file;
+
+						while(fileSize > 0){
+
+							if(fileSize < BUF){
+								toRead = fileSize;
+							}else{
+								toRead = BUF;
+							}
+							char readBuffer[toRead];
+							bzero(readBuffer,toRead);
+
+							int size = recv(new_socket, readBuffer, toRead, 0);
+
+							memcpy(pos,readBuffer,toRead);
+							std::cout << readBuffer << std::endl;
+							pos += toRead;
+							fileSize -= toRead;
+						}
+						fileObj->setFile(file);
+					}
+
+					msg->setFile(fileObj);
 					if (service->sendMsg(msg)) {
 						returnMsg = "OK\n";
 					} else {
 						returnMsg = "ERR\n";
 						//strcpy(returnBuffer, "ERR\n");
 					}
-
+					delete[] file;
 					delete (msg);
 
 				}
