@@ -66,9 +66,7 @@ BlockedUserService::~BlockedUserService()
 		return false;
 	}
 
-	std::map<std::string,
-time_t > BlockedUserService ::readBlockedUser()
-{
+std::map<std::string,time_t > BlockedUserService ::readBlockedUser(){
 	std::map<std::string, time_t> blockedUserMap;
 	std::string line;
 
@@ -88,8 +86,10 @@ time_t > BlockedUserService ::readBlockedUser()
 			blockedUserMap.insert(std::pair<std::string, time_t>(ipAddress, timestamp));
 
 		}
+		f.close();
+	}else{
+		exit(EXIT_FAILURE);
 	}
-	f.close();
 
 	pthread_mutex_unlock(&blockedUserMutex);
 

@@ -31,8 +31,7 @@ MessageDao::~MessageDao() {
 
 bool MessageDao::saveMessage(Message* msg) {
 	std::list<std::string> to = msg->getTo();
-	for (std::list<std::string>::iterator it = to.begin(); it != to.end();
-			it++) {
+	for (std::list<std::string>::iterator it = to.begin(); it != to.end(); it++) {
 
 		std::stringstream userPath;
 		userPath << this->dirPath << "/" << *it;
@@ -72,8 +71,7 @@ bool MessageDao::saveMessage(Message* msg) {
 		if (msg->isFileAttached() == true) {
 			File* file = msg->getFile();
 			std::stringstream attachmentPath;
-			attachmentPath << this->dirPath << "/" << *it << "/" << msgNr << "_"
-					<< file->getFilename();
+			attachmentPath << this->dirPath << "/" << *it << "/" << msgNr << "_" << file->getFilename();
 
 			std::ofstream outfile(attachmentPath.str(), std::ofstream::binary);
 			outfile.write(file->getFile(), file->getFilesize());
@@ -98,11 +96,10 @@ std::list<Message*> MessageDao::loadMessages(std::string username) {
 		while ((dirent = readdir(dirp)) != NULL) {
 			char* filename = dirent->d_name;
 			int filename_len = strlen(filename);
-			if (filename_len >= 4
-					&& strcmp(filename + filename_len - 4, ".msg") == 0) {
+			if (filename_len >= 4 && strcmp(filename + filename_len - 4, ".msg") == 0) {
 				char* p;
 				p = strtok(filename, ".");
-				Message* msg = this->readMessage(username, atoll(p));
+				Message* msg = this->readMessageInternal(username, atoll(p));
 				list.push_back(msg);
 			}
 		}
@@ -112,7 +109,20 @@ std::list<Message*> MessageDao::loadMessages(std::string username) {
 	return list;
 }
 
-Message* MessageDao::readMessage(std::string username, long long msgNr) {
+Message* MessageDao::readMessage(std::string username, long long msgNumber) {
+
+	long long msgNr = findMessageNr(username, msgNumber);
+
+	if (msgNr == 0) {
+		return NULL;
+	}
+
+	return readMessageInternal(username, msgNr);
+
+}
+
+Message* MessageDao::readMessageInternal(std::string username, long long msgNr) {
+
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 
@@ -145,8 +155,7 @@ Message* MessageDao::readMessage(std::string username, long long msgNr) {
 		if (line.substr(0, prefix.size()) == prefix) {
 			std::stringstream attPath;
 			std::string filename = line.substr(prefix.size());
-			attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
-					<< filename;
+			attPath << this->dirPath << "/" << username << "/" << msgNr << "_" << filename;
 			std::ifstream infile(attPath.str(), std::ifstream::binary);
 			// get size of file
 			infile.seekg(0, infile.end);
@@ -175,6 +184,8 @@ Message* MessageDao::readMessage(std::string username, long long msgNr) {
 		}
 		msg->setText(text);
 		f.close();
+	} else {
+		return NULL;
 	}
 	return msg;
 }
@@ -191,8 +202,7 @@ bool MessageDao::delMessage(std::string username, long long msgNr) {
 
 	if (delMsg->isFileAttached() == true) {
 		std::stringstream attPath;
-		attPath << this->dirPath << "/" << username << "/" << msgNr << "_"
-				<< delMsg->getFile()->getFilename();
+		attPath << this->dirPath << "/" << username << "/" << msgNr << "_" << delMsg->getFile()->getFilename();
 		const char* path = attPath.str().c_str();
 
 		if (remove(path) != 0) {
@@ -203,5 +213,42 @@ bool MessageDao::delMessage(std::string username, long long msgNr) {
 
 	delete (delMsg);
 	return true;
+}
+
+long long MessageDao::findMessageNr(std::string username, long long msgNumber) {
+
+	std::stringstream dir;
+	dir << this->dirPath << "/" << username << "/";
+
+	DIR *dp;
+	struct dirent *dirp;
+	if ((dp = opendir(dir.str().c_str())) == NULL) {
+		return 0;
+	}
+
+	long long result = 0;
+
+	while ((dirp = readdir(dp)) != NULL) {
+		std::string filename = dirp->d_name;
+		if (filename.length() <= 4) {
+			continue;
+		}
+		filename.erase(filename.length() - 4, filename.length());
+		std::stringstream numberStream;
+		numberStream << msgNumber;
+
+		std::string number = numberStream.str();
+
+		if (filename.compare(filename.length() - number.length(), number.length(), number) == 0) {
+			if (result == 0) {
+				result = atoll(filename.c_str());
+			} else {
+				result = 0;
+				break;
+			}
+		}
+	}
+	closedir(dp);
+	return result;
 }
 

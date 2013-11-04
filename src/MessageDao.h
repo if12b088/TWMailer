@@ -21,6 +21,8 @@ public:
 	virtual Message* readMessage(std::string username, long long msgNr);
 	virtual bool delMessage(std::string username, long long msgNr);
 private:
+	virtual Message* readMessageInternal(std::string username, long long msgNr);
+	virtual long long findMessageNr(std::string username, long long msgNumber);
 	std::string dirPath;
 };
 
