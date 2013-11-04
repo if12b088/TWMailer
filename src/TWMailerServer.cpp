@@ -26,13 +26,14 @@ void printUsage(std::string programName) {
 	exit(EXIT_FAILURE);
 }
 
-void handleConnection(int new_socket, MessageService* service, BlockedUserService* blockedUser,
-		struct sockaddr_in* cliaddress) {
+void handleConnection(int new_socket, MessageService* service,
+		BlockedUserService* blockedUser, struct sockaddr_in* cliaddress) {
 
 	char buffer[BUF];
 	std::string returnMsg;
 	int size;
 	int countLogin = 0;
+	std::string username;
 	LDAPService* ldap = new LDAPService();
 
 	if (new_socket > 0) {
@@ -78,6 +79,8 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 					}
 
 					if (b) {
+						// Username setzten
+						username = user;
 						returnMsg = "OK\n";
 					} else {
 						countLogin++;
@@ -88,10 +91,11 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 						if (countLogin >= 3) {
 
 							//IP sperren
-							//blockedUser->blockUser(inet_ntoa(cliaddress->sin_addr));
+							blockedUser->blockUser(inet_ntoa(cliaddress->sin_addr));
 							returnMsg = "BAN\n";
 
-							if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0) == -1) {
+							if (send(new_socket, returnMsg.c_str(),
+									returnMsg.length(), 0) == -1) {
 								perror("Send error");
 								return;
 							}
@@ -105,8 +109,8 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 				//SEND
 				if (strcmp(buffer, "SEND\n") == 0) {
-					char fromChar[BUF];
-					std::string from;
+					//char fromChar[BUF];
+					//std::string from;
 					char toChar[BUF];
 					std::string to;
 					char subjectChar[BUF];
@@ -119,9 +123,9 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 					char fileNameChar[BUF];
 					std::string fileName;
 
-					Helper::readline(new_socket, fromChar, BUF - 1);
+					//Helper::readline(new_socket, fromChar, BUF - 1);
 
-					from = Helper::removeNewline(std::string(fromChar));
+					//from = Helper::removeNewline(std::string(fromChar));
 
 					int sizeTo = 1;
 					do {
@@ -142,10 +146,12 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 #endif
 						textTempStr = "";
 						textTempChar[0] = '\0';
-						sizeText = Helper::readline(new_socket, textTempChar, BUF - 1);
+						sizeText = Helper::readline(new_socket, textTempChar,
+								BUF - 1);
 						textTempStr = std::string(textTempChar);
 
-						if (lastChar != '\n' || textTempStr.compare(".\n") != 0) {
+						if (lastChar != '\n'
+								|| textTempStr.compare(".\n") != 0) {
 							text.append(textTempStr);
 						}
 #ifdef _DEBUG
@@ -157,7 +163,7 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 					fileSize = atoll(fileSizeChar);
 
 #ifdef _DEBUG
-					std::cout << "From: " << from << std::endl;
+					//std::cout << "From: " << from << std::endl;
 					std::cout << "To: " << to << std::endl;
 					std::cout << "Subject: " << subject << std::endl;
 					std::cout << "Text: " << text << std::endl;
@@ -171,7 +177,7 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 					Message* msg = new Message();
 					File* fileObj = new File();
-					msg->setFrom(from);
+					msg->setFrom(username);
 					msg->setTo(Helper::splitString(to, ";"));
 					msg->setSubject(subject);
 					msg->setText(text);
@@ -183,7 +189,8 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 						fileObj->setFilesize(fileSize);
 
 						Helper::readline(new_socket, fileNameChar, BUF - 1);
-						fileName = Helper::removeNewline(std::string(fileNameChar));
+						fileName = Helper::removeNewline(
+								std::string(fileNameChar));
 						fileObj->setFilename(fileName);
 #ifdef _DEBUG
 						std::cout << "FileName: " << fileName << std::endl;
@@ -228,24 +235,26 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 				} else if (strcmp(buffer, "LIST\n") == 0) {
 					//LIST
-					char userChar[BUF];
-					std::string user;
+					//char userChar[BUF];
+					//std::string user;
 
-					Helper::readline(new_socket, userChar, BUF - 1);
-					user = Helper::removeNewline(std::string(userChar));
+					//Helper::readline(new_socket, userChar, BUF - 1);
+					//user = Helper::removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
-					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+					std::cout << "User: " << username << std::endl;
 #endif
 
-					std::list<Message*> msgList = service->listMsg(user);
+					std::list<Message*> msgList = service->listMsg(username);
 					std::stringstream ss;
 
 					ss << msgList.size() << "\n";
 
-					for (std::list<Message*>::iterator it = msgList.begin(); it != msgList.end(); it++) {
+					for (std::list<Message*>::iterator it = msgList.begin();
+							it != msgList.end(); it++) {
 						Message* msg = *it;
-						ss << msg->getMsgNr() << ": " << msg->getSubject() << "\n";
+						ss << msg->getMsgNr() << ": " << msg->getSubject()
+								<< "\n";
 						delete (msg);
 					}
 
@@ -257,23 +266,23 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 				} else if (strcmp(buffer, "READ\n") == 0) {
 					//READ
-					char userChar[BUF];
-					std::string user;
+					//char userChar[BUF];
+					//std::string user;
 					char nrChar[BUF];
 
-					Helper::readline(new_socket, userChar, BUF - 1);
+					//Helper::readline(new_socket, userChar, BUF - 1);
 
-					user = Helper::removeNewline(std::string(userChar));
+					//user = Helper::removeNewline(std::string(userChar));
 
 					Helper::readline(new_socket, nrChar, BUF - 1);
 					nrChar[strlen(nrChar) - 1] = '\0';
 
 #ifdef _DEBUG
-					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+					std::cout << "User: " << username << std::endl;
 					std::cout << "Nr: " << nrChar << ", size: " << strlen(nrChar) << std::endl;
 #endif
 
-					Message* msg = service->readMsg(user, atol(nrChar));
+					Message* msg = service->readMsg(username, atol(nrChar));
 
 					if (msg->getMsgNr() == 0) {
 						returnMsg = "Es wurde keine Message gefunden\n";
@@ -281,8 +290,8 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 						std::stringstream ss;
 
-						ss << "Nachricht mit der Nummer: " << msg->getMsgNr() << "\n" << msg->toString() << "\n.\n"
-								<< "\n";
+						ss << "Nachricht mit der Nummer: " << msg->getMsgNr()
+								<< "\n" << msg->toString() << "\n.\n" << "\n";
 
 						returnMsg = ss.str();
 					}
@@ -293,23 +302,23 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 
 				} else if (strcmp(buffer, "DEL\n") == 0) {
 					//DEL
-					char userChar[BUF];
-					std::string user;
+					//char userChar[BUF];
+					//std::string user;
 					char nrChar[BUF];
 
-					Helper::readline(new_socket, userChar, BUF - 1);
+					//Helper::readline(new_socket, userChar, BUF - 1);
+					//user = Helper::removeNewline(std::string(userChar));
 
-					user = Helper::removeNewline(std::string(userChar));
 					Helper::readline(new_socket, nrChar, BUF - 1);
 					nrChar[strlen(nrChar) - 1] = '\0';
 
 #ifdef _DEBUG
-					std::cout << "User: " << user << ", size: " << user.length() << std::endl;
+					std::cout << "User: " << username << std::endl;
 					std::cout << "Nr: " << nrChar << ", size: " << strlen(nrChar) << std::endl;
 #endif
 
 					//convert nr to long
-					if (service->deleteMsg(user, atol(nrChar))) {
+					if (service->deleteMsg(username, atol(nrChar))) {
 						returnMsg = "OK\n";
 						//strcpy(returnBuffer, "OK\n");
 					} else {
@@ -330,7 +339,8 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 			}
 
 			//answer
-			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0) == -1) {
+			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0)
+					== -1) {
 				perror("Send error");
 				return;
 			}
@@ -384,12 +394,14 @@ int main(int argc, char *argv[]) {
 
 	// damit man den gleichen Port nochmal oeffnen kann
 	int yes = 1;
-	if (setsockopt(create_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+	if (setsockopt(create_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int))
+			== -1) {
 		perror("reuse error");
 		return EXIT_FAILURE;
 	}
 
-	if (bind(create_socket, (struct sockaddr *) &address, sizeof(address)) != 0) {
+	if (bind(create_socket, (struct sockaddr *) &address, sizeof(address))
+			!= 0) {
 		perror("bind error");
 		return EXIT_FAILURE;
 	}
@@ -402,15 +414,20 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 		printf("Waiting for connections...\n");
-		int new_socket = accept(create_socket, (struct sockaddr *) &cliaddress, &addrlen);
+		int new_socket = accept(create_socket, (struct sockaddr *) &cliaddress,
+				&addrlen);
 
 		//handleConnection(new_socket, service);
 		if (!blockedUser->isBlocked(inet_ntoa(cliaddress.sin_addr))) {
-			threads.push_back(std::thread(handleConnection, new_socket, service, blockedUser, &cliaddress));
+		//if(1){
+			threads.push_back(
+					std::thread(handleConnection, new_socket, service,
+							blockedUser, &cliaddress));
 		} else {
 			// Fehlernachricht an Client
 			std::string returnMsg = "Your IP is Blocked";
-			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0) == -1) {
+			if (send(new_socket, returnMsg.c_str(), returnMsg.length(), 0)
+					== -1) {
 				perror("Send error");
 				return EXIT_FAILURE;
 			}
