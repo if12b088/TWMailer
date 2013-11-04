@@ -17,6 +17,7 @@
 class Helper {
 public:
 	static ssize_t readline(int fd, char *vptr, size_t maxlen);
+	static std::string removeNewline(std::string s);
 	static std::list<std::string> splitString(std::string string,
 			std::string delimiter);
 private:

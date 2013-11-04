@@ -49,6 +49,13 @@ ssize_t Helper::readline(int fd, char *vptr, size_t maxlen) {
 	return (n);
 }
 
+std::string Helper::removeNewline(std::string s) {
+	if (!s.empty() && s[s.length() - 1] == '\n') {
+		s.erase(s.length() - 1);
+	}
+	return s;
+}
+
 std::list<std::string> Helper::splitString(std::string string,
 		std::string delimiter) {
 	std::list<std::string> list;
