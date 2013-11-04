@@ -191,15 +191,25 @@ Message* MessageDao::readMessageInternal(std::string username, long long msgNr) 
 	return msg;
 }
 
-bool MessageDao::delMessage(std::string username, long long msgNr) {
-	Message* delMsg = readMessage(username, msgNr);
+bool MessageDao::delMessage(std::string username, long long msgNumber) {
+
+	Message* delMsg = readMessage(username, msgNumber);
+
+	if (delMsg->getMsgNr() == 0) {
+		delete (delMsg);
+		return false;
+	}
+
+	long long msgNr = delMsg->getMsgNr();
 
 	std::stringstream userPath;
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 	const char* path = userPath.str().c_str();
 
-	if (remove(path) != 0)
+	if (remove(path) != 0) {
+		delete (delMsg);
 		return false;
+	}
 
 	if (delMsg->isFileAttached() == true) {
 		std::stringstream attPath;
