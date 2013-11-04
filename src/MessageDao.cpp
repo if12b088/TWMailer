@@ -171,6 +171,7 @@ Message* MessageDao::readMessage(std::string username, long long msgNr) {
 		std::string text;
 		while (getline(f, line)) {
 			text.append(line);
+			text.append("\n");
 		}
 		msg->setText(text);
 		f.close();

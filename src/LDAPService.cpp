@@ -44,7 +44,7 @@ bool LDAPService::login(std::string username, std::string password) {
 	/* setup LDAP connection */
 	if ((ld = ldap_init(LDAP_HOST, LDAP_PORT)) == NULL) {
 		perror("ldap_init failed");
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	//printf("connected to LDAP server %s on port %d\n", LDAP_HOST, LDAP_PORT);
@@ -54,7 +54,7 @@ bool LDAPService::login(std::string username, std::string password) {
 
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "LDAP error: %s\n", ldap_err2string(rc));
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	/* perform ldap search */
@@ -63,7 +63,7 @@ bool LDAPService::login(std::string username, std::string password) {
 
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
-		return EXIT_FAILURE;
+		return false;
 	}
 
 	if (ldap_count_entries(ld, result) != 1) {
