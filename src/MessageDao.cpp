@@ -114,7 +114,9 @@ Message* MessageDao::readMessage(std::string username, long long msgNumber) {
 	long long msgNr = findMessageNr(username, msgNumber);
 
 	if (msgNr == 0) {
-		return NULL;
+		Message* msg = new Message();
+		msg->setMsgNr(0);
+		return msg;
 	}
 
 	return readMessageInternal(username, msgNr);
@@ -127,13 +129,14 @@ Message* MessageDao::readMessageInternal(std::string username, long long msgNr) 
 	userPath << this->dirPath << "/" << username << "/" << msgNr << ".msg";
 
 	Message* msg = new Message();
-	msg->setMsgNr(msgNr);
+	msg->setMsgNr(0);
 
 	const char* path = userPath.str().c_str();
 
 	std::string line;
 	std::ifstream f(path);
 	if (f.is_open()) {
+		msg->setMsgNr(msgNr);
 		getline(f, line);
 		msg->setFrom(line);
 		getline(f, line);
@@ -184,8 +187,6 @@ Message* MessageDao::readMessageInternal(std::string username, long long msgNr) 
 		}
 		msg->setText(text);
 		f.close();
-	} else {
-		return NULL;
 	}
 	return msg;
 }
