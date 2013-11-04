@@ -83,7 +83,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 
 					bool b;
-					if (user == "i") {
+					if (user == "if12b088") {
 						b = true;
 					} else {
 						b = ldap->login(user, passwd);
@@ -255,7 +255,6 @@ void handleConnection(int new_socket, MessageService* service,
 
 					Helper::readline(new_socket, userChar,
 					BUF - 1);
-
 					user = removeNewline(std::string(userChar));
 
 #ifdef _DEBUG
@@ -277,6 +276,9 @@ void handleConnection(int new_socket, MessageService* service,
 
 					//strcpy(returnBuffer, ss.str().c_str());
 					returnMsg = ss.str();
+#ifdef _DEBUG
+					std::cout << "returnMsg: " << returnMsg << std::endl;
+#endif
 
 				} else if (strcmp(buffer, "READ\n") == 0) {
 					//READ
@@ -305,7 +307,9 @@ void handleConnection(int new_socket, MessageService* service,
 							<< "\n";
 
 					returnMsg = ss.str();
-
+#ifdef _DEBUG
+					std::cout << "returnMsg: " << returnMsg << std::endl;
+#endif
 					delete (msg);
 
 				} else if (strcmp(buffer, "DEL\n") == 0) {
@@ -335,7 +339,9 @@ void handleConnection(int new_socket, MessageService* service,
 						//strcpy(returnBuffer, "ERR\n");
 					}
 				}
-
+#ifdef _DEBUG
+					std::cout << "returnMsg: " << returnMsg << std::endl;
+#endif
 				//printf("Message received: %s\n", buffer);
 			} else if (size == 0) {
 				printf("Client closed remote socket\n");
@@ -352,7 +358,7 @@ void handleConnection(int new_socket, MessageService* service,
 				return;
 			}
 #ifdef _DEBUG
-			std::cout << "ende" << std::endl;
+			//std::cout << "ende" << std::endl;
 #endif
 
 		} while (strncmp(buffer, "quit", 4) != 0);
