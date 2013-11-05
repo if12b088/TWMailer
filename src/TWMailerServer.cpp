@@ -295,6 +295,10 @@ void handleConnection(int new_socket, MessageService* service,
 #ifdef _DEBUG
 					std::cout << "returnMsg: " << returnMsg << std::endl;
 #endif
+
+					//answer
+					answerClient(new_socket, returnMsg);
+
 					//Send File
 					if (msg->isFileAttached()) {
 						long long fileSize = msg->getFile()->getFilesize();
@@ -314,8 +318,6 @@ void handleConnection(int new_socket, MessageService* service,
 						}
 					}
 					delete (msg);
-					//answer
-					answerClient(new_socket, returnMsg);
 
 				} else if (strcmp(buffer, "DEL\n") == 0) {
 //DEL
