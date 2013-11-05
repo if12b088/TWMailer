@@ -149,11 +149,15 @@ Message* MessageDao::readMessageInternal(std::string username, long long msgNr) 
 			to.push_back(token);
 			line.erase(0, pos + delimiter.length());
 		}
-		to.push_back(line);
+		if (line.length() > 0) {
+			to.push_back(line);
+		}
 		msg->setTo(to);
 		getline(f, line);
 		msg->setSubject(line);
 		getline(f, line);
+
+		std::string text;
 		std::string prefix = "ATT: ";
 		if (line.substr(0, prefix.size()) == prefix) {
 			std::stringstream attPath;
@@ -179,8 +183,10 @@ Message* MessageDao::readMessageInternal(std::string username, long long msgNr) 
 
 			infile.close();
 
+		} else {
+			text.append(line);
+			text.append("\n");
 		}
-		std::string text;
 		while (getline(f, line)) {
 			text.append(line);
 			text.append("\n");

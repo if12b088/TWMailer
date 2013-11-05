@@ -282,14 +282,14 @@ void handleConnection(int new_socket, MessageService* service,
 					Message* msg = service->readMsg(username, atol(nrChar));
 
 					if (msg->getMsgNr() == 0) {
-						returnMsg = "Es wurde keine Message gefunden\n";
+						returnMsg = "Es konnte keine eindeutige Message gefunden werden\n";
 					} else {
 
 						std::stringstream ss;
 
 						//	ss << "Nachricht mit der Nummer: " << msg->getMsgNr()
 						ss << msg->getMsgNr() << "\n" << msg->toProtocol()
-								<< "\n.\n";
+								<< ".\n";
 						returnMsg = ss.str();
 					}
 #ifdef _DEBUG
