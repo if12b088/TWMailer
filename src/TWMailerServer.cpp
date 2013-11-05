@@ -45,18 +45,13 @@ void handleConnection(int new_socket, MessageService* service,
 	LDAPService* ldap = new LDAPService();
 
 	if (new_socket > 0) {
-//		printf("Client connected from %s:%d...\n",
-//				inet_ntoa(cliaddress->sin_addr), ntohs(cliaddress->sin_port));
+
 		strcpy(buffer, "Welcome to myserver, Please enter your Username:\n");
 		send(new_socket, buffer, strlen(buffer), 0);
 
 		do {
 			bzero(buffer, BUF);
 			size = Helper::readline(new_socket, buffer, BUF - 1);
-
-#ifdef _DEBUG
-			std::cout << "buffer: " << buffer << std::endl;
-#endif
 
 			if (size > 0) {
 				buffer[size] = '\0';
@@ -93,9 +88,6 @@ void handleConnection(int new_socket, MessageService* service,
 					} else {
 						countLogin++;
 
-#ifdef _DEBUG
-						std::cout << "countLogin: " << countLogin << std::endl;
-#endif
 						if (countLogin >= 3) {
 
 							//IP sperren
@@ -145,9 +137,7 @@ void handleConnection(int new_socket, MessageService* service,
 					int sizeText = 1;
 					do {
 						lastChar = textTempStr[sizeText - 1];
-#ifdef _DEBUG
-						std::cout << "lastChar: " << lastChar << std::endl;
-#endif
+
 						textTempStr = "";
 						textTempChar[0] = '\0';
 						sizeText = Helper::readline(new_socket, textTempChar,
@@ -158,26 +148,11 @@ void handleConnection(int new_socket, MessageService* service,
 								|| textTempStr.compare(".\n") != 0) {
 							text.append(textTempStr);
 						}
-#ifdef _DEBUG
-						std::cout << "sizeText: " << sizeText << " eine Zeile: " << textTempStr << std::endl;
-#endif
+
 					} while (lastChar != '\n' || textTempStr.compare(".\n") != 0);
 
 					Helper::readline(new_socket, fileSizeChar, BUF - 1);
 					fileSize = atoll(fileSizeChar);
-
-#ifdef _DEBUG
-					//std::cout << "From: " << from << std::endl;
-					std::cout << "To: " << to << std::endl;
-					std::cout << "Subject: " << subject << std::endl;
-					std::cout << "Text: " << text << std::endl;
-					std::cout << "FileSize: " << fileSize << std::endl;
-#endif
-
-//					if (send(new_socket, "Protokoll OK\n", 13, 0) == -1) {
-//						perror("Send error");
-//						return;
-//					}
 
 					Message* msg = new Message();
 					File* fileObj = new File();
@@ -196,13 +171,13 @@ void handleConnection(int new_socket, MessageService* service,
 						fileName = Helper::removeNewline(
 								std::string(fileNameChar));
 						fileObj->setFilename(fileName);
-#ifdef _DEBUG
-						std::cout << "FileName: " << fileName << std::endl;
-#endif
+
 						char* file = new char[fileSize];
 						bzero(file, fileSize);
 						int toRead;
 						char* pos = file;
+						int readSize;
+						std::string blockOK;
 
 						while (fileSize > 0) {
 
@@ -214,16 +189,25 @@ void handleConnection(int new_socket, MessageService* service,
 							char readBuffer[toRead];
 							bzero(readBuffer, toRead);
 
-							int sendSize = recv(new_socket, readBuffer, toRead, 0);
+							do {
+								readSize = recv(new_socket, readBuffer, toRead,
+										0);
 
-							memcpy(pos, readBuffer, sendSize);
-							pos += sendSize;
-							fileSize -= sendSize;
+								if (readSize == toRead) {
+									blockOK = "Y";
+								} else {
+									blockOK = "N";
+									std::cout << blockOK << std::endl;
+								}
+								send(new_socket, blockOK.c_str(), 2, 0);
+							} while (readSize != toRead);
+
+							std::cout << readSize << std::endl;
+							memcpy(pos, readBuffer, readSize);
+							pos += readSize;
+							fileSize -= readSize;
 						}
 						fileObj->setFile(file);
-#ifdef _DEBUG
-						std::cout << file << std::endl;
-#endif
 					}
 
 					msg->setFile(fileObj);
@@ -242,10 +226,6 @@ void handleConnection(int new_socket, MessageService* service,
 				} else if (strcmp(buffer, "LIST\n") == 0) {
 //LIST
 
-#ifdef _DEBUG
-					std::cout << "User: " << username << std::endl;
-#endif
-
 					std::list<Message*> msgList = service->listMsg(username);
 					std::stringstream ss;
 
@@ -261,9 +241,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 					//strcpy(returnBuffer, ss.str().c_str());
 					returnMsg = ss.str();
-#ifdef _DEBUG
-					std::cout << "returnMsg: " << returnMsg << std::endl;
-#endif
+
 					//answer
 					answerClient(new_socket, returnMsg);
 
@@ -274,31 +252,23 @@ void handleConnection(int new_socket, MessageService* service,
 					Helper::readline(new_socket, nrChar, BUF - 1);
 					nrChar[strlen(nrChar) - 1] = '\0';
 
-#ifdef _DEBUG
-					std::cout << "User: " << username << std::endl;
-					std::cout << "Nr: " << nrChar << ", size: " << strlen(nrChar) << std::endl;
-#endif
-
 					Message* msg = service->readMsg(username, atol(nrChar));
 
 					if (msg->getMsgNr() == 0) {
-						returnMsg = "Es konnte keine eindeutige Message gefunden werden\n";
+						returnMsg =
+								"Es konnte keine eindeutige Message gefunden werden\n";
 					} else {
 
 						std::stringstream ss;
-
-						//	ss << "Nachricht mit der Nummer: " << msg->getMsgNr()
 						ss << msg->getMsgNr() << "\n" << msg->toProtocol()
 								<< ".\n";
 						returnMsg = ss.str();
 					}
-#ifdef _DEBUG
-					std::cout << "returnMsg: " << returnMsg << std::endl;
-#endif
 
 					//answer
 					answerClient(new_socket, returnMsg);
-
+					int sendSize;
+					char blockOK[2];
 					//Send File
 					if (msg->isFileAttached()) {
 						long long fileSize = msg->getFile()->getFilesize();
@@ -312,7 +282,14 @@ void handleConnection(int new_socket, MessageService* service,
 								toRead = fileSize;
 							}
 
-							int sendSize = send(new_socket, file, toRead, 0);
+							do {
+								sendSize = send(new_socket, file, toRead, 0);
+								recv(new_socket, blockOK, 2, 0);
+								if (strcmp(blockOK, "Y") != 0) {
+									printf("blockOK: %s\n", blockOK);
+								}
+							} while (strcmp(blockOK, "Y") != 0);
+
 							file += sendSize;
 							fileSize -= sendSize;
 						}
@@ -326,11 +303,6 @@ void handleConnection(int new_socket, MessageService* service,
 					Helper::readline(new_socket, nrChar, BUF - 1);
 					nrChar[strlen(nrChar) - 1] = '\0';
 
-#ifdef _DEBUG
-					//std::cout << "User: " << username << std::endl;
-					//std::cout << "Nr: " << nrChar << ", size: " << strlen(nrChar) << std::endl;
-#endif
-
 					//convert nr to long
 					if (service->deleteMsg(username, atol(nrChar))) {
 						returnMsg = "OK\n";
@@ -343,9 +315,6 @@ void handleConnection(int new_socket, MessageService* service,
 					//answer
 					answerClient(new_socket, returnMsg);
 				}
-#ifdef _DEBUG
-			//	std::cout << "returnMsg: " << returnMsg << std::endl;
-#endif
 				//printf("Message received: %s\n", buffer);
 			} else if (size == 0) {
 				printf("Client closed remote socket\n");
@@ -355,24 +324,12 @@ void handleConnection(int new_socket, MessageService* service,
 				return;
 			}
 
-#ifdef _DEBUG
-			//std::cout << "ende" << std::endl;
-#endif
-
 		} while (strncmp(buffer, "quit", 4) != 0);
 		close(new_socket);
 	}
 }
 
 int main(int argc, char *argv[]) {
-
-	// Ausgabe der Parameter
-#ifdef _DEBUG
-	std::cout << "argv0: " << argv[0] << std::endl;
-	std::cout << "argv1: " << argv[1] << std::endl;
-	std::cout << "argv2: " << argv[2] << std::endl;
-	std::cout << "argc: " << argc << std::endl;
-#endif
 
 	if (argc != 3) {
 		printUsage(argv[0]);
@@ -420,7 +377,6 @@ int main(int argc, char *argv[]) {
 
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 
-	//std::vector<std::thread> threads;
 	std::list<std::thread> threads;
 
 	while (1) {
@@ -430,7 +386,6 @@ int main(int argc, char *argv[]) {
 
 		//handleConnection(new_socket, service);
 		if (!blockedUser->isBlocked(inet_ntoa(cliaddress.sin_addr))) {
-			//if(1){
 			threads.push_back(
 					std::thread(handleConnection, new_socket, service,
 							blockedUser, &cliaddress));
@@ -445,6 +400,5 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	close(create_socket);
-//delete(IPAdress);
 	return EXIT_SUCCESS;
 }
