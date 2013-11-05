@@ -31,6 +31,7 @@ public:
 	virtual void setFile(File* file);
 	virtual File* getFile();
 	virtual std::string toString();
+	virtual std::string toProtocol();
 private:
 	long long msgNr;
 	std::string from;

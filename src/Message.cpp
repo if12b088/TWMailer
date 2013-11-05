@@ -74,11 +74,33 @@ std::string Message::toString() {
 	result.append(this->subject);
 	if (this->fileAttached == true) {
 		result.append("\n");
-		result.append("ATT");
-		result.append("\n");
+		result.append("ATT: ");
 		result.append(file->getFilename());
+	}
+	result.append("\n");
+	result.append(this->text);
+	return result;
+}
+
+std::string Message::toProtocol() {
+	std::string result;
+	result.append(this->from);
+	result.append("\n");
+	for (std::list<std::string>::iterator it = to.begin(); it != to.end();
+			it++) {
+		result.append(*it);
+		result.append(";");
+	}
+	result.append("\n");
+	result.append(this->subject);
+	if (this->fileAttached == true) {
 		result.append("\n");
 		result.append(std::to_string(file->getFilesize()));
+		result.append("\n");
+		result.append(file->getFilename());
+	} else {
+		result.append("\n");
+		result.append("0");
 	}
 	result.append("\n");
 	result.append(this->text);
