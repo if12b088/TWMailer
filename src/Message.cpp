@@ -74,8 +74,11 @@ std::string Message::toString() {
 	result.append(this->subject);
 	if (this->fileAttached == true) {
 		result.append("\n");
-		result.append("ATT: ");
+		result.append("ATT");
+		result.append("\n");
 		result.append(file->getFilename());
+		result.append("\n");
+		result.append(std::to_string(file->getFilesize()));
 	}
 	result.append("\n");
 	result.append(this->text);

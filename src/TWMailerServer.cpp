@@ -124,7 +124,6 @@ void handleConnection(int new_socket, MessageService* service,
 					std::string fileName;
 
 					//Helper::readline(new_socket, fromChar, BUF - 1);
-
 					//from = Helper::removeNewline(std::string(fromChar));
 
 					int sizeTo = 1;
@@ -213,7 +212,6 @@ void handleConnection(int new_socket, MessageService* service,
 							recv(new_socket, readBuffer, toRead, 0);
 
 							memcpy(pos, readBuffer, toRead);
-							//std::cout << readBuffer << std::endl;
 							pos += toRead;
 							fileSize -= toRead;
 						}
@@ -235,6 +233,7 @@ void handleConnection(int new_socket, MessageService* service,
 
 				} else if (strcmp(buffer, "LIST\n") == 0) {
 					//LIST
+
 					//char userChar[BUF];
 					//std::string user;
 
@@ -290,7 +289,8 @@ void handleConnection(int new_socket, MessageService* service,
 
 						std::stringstream ss;
 
-						ss << "Nachricht mit der Nummer: " << msg->getMsgNr()
+					//	ss << "Nachricht mit der Nummer: " << msg->getMsgNr()
+						ss << msg->getMsgNr()
 								<< "\n" << msg->toString() << "\n.\n" << "\n";
 
 						returnMsg = ss.str();
