@@ -38,6 +38,7 @@ ConnectionHandler.o: ConnectionHandler.cpp ConnectionHandler.h
 
 clean: 
 	rm -f *.o
+	rm -f TWMailerServer
 
 dist:
 	mkdir TWMailerServer-${VERSION}
