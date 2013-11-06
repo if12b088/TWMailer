@@ -29,44 +29,43 @@ BlockedUserService::BlockedUserService(std::string path)
 
 BlockedUserService::~BlockedUserService()
 {
-	// TODO Auto-generated destructor stub
-	}
+}
 
-	void BlockedUserService::blockUser(std::string ipAddress)
+void BlockedUserService::blockUser(std::string ipAddress)
+{
+	std::map<std::string, time_t> blockedUser = readBlockedUser();
+	time_t blockedTime = time(NULL);
+	std::map<std::string, time_t>::iterator it = blockedUser.find(ipAddress);
+	if (it == blockedUser.end())
 	{
-		std::map<std::string, time_t> blockedUser = readBlockedUser();
-		time_t blockedTime = time(NULL);
-		std::map<std::string, time_t>::iterator it = blockedUser.find(ipAddress);
-		if (it == blockedUser.end())
-		{
-			blockedUser.insert(
-					std::pair<std::string, time_t>(ipAddress, blockedTime));
-		}
-		else
-		{
-			it->second = blockedTime;
-		}
-		writeBlockedUser(blockedUser);
+		blockedUser.insert(
+				std::pair<std::string, time_t>(ipAddress, blockedTime));
 	}
-
-	bool BlockedUserService::isBlocked(std::string ipAddress)
+	else
 	{
-		std::map<std::string, time_t> blockedUser = readBlockedUser();
-		std::map<std::string, time_t>::iterator it = blockedUser.find(ipAddress);
-		if (it != blockedUser.end())
-		{
-			time_t now = time(NULL);
-			time_t blockedTime = it->second;
-			double diffSeconds = difftime(now, blockedTime);
-			if (BLOCKEDINTERVALL > diffSeconds)
-			{
-				return true;
-			}
-		}
-		return false;
+		it->second = blockedTime;
 	}
+	writeBlockedUser(blockedUser);
+}
 
-std::map<std::string, time_t> BlockedUserService::readBlockedUser() {
+bool BlockedUserService::isBlocked(std::string ipAddress)
+{
+	std::map<std::string, time_t> blockedUser = readBlockedUser();
+	std::map<std::string, time_t>::iterator it = blockedUser.find(ipAddress);
+	if (it != blockedUser.end())
+	{
+		time_t now = time(NULL);
+		time_t blockedTime = it->second;
+		double diffSeconds = difftime(now, blockedTime);
+		if (BLOCKEDINTERVALL > diffSeconds)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+std::map<std::string, time_t > BlockedUserService ::readBlockedUser() {
 	std::map<std::string, time_t> blockedUserMap;
 	std::string line;
 

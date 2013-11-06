@@ -42,11 +42,10 @@ std::string login(int new_socket, int* countLogin, std::string ipaddress, Blocke
 	LDAPService* ldap = new LDAPService();
 
 	if (!blockedUserService->isBlocked(ipaddress)) {
-		if (
-		//user == "if12b088" || user == "if12b046" ||
-		ldap->login(user, passwd)) {
+		if (user == "if12b088" || user == "if12b046" || ldap->login(user, passwd)) {
 			//answer
 			Helper::answerClient(new_socket, "OK\n");
+			delete (ldap);
 			return user;
 		} else {
 			countLogin++;
@@ -62,6 +61,7 @@ std::string login(int new_socket, int* countLogin, std::string ipaddress, Blocke
 			}
 		}
 	}
+	delete (ldap);
 	return "";
 
 }
@@ -119,6 +119,7 @@ void handleConnection(int new_socket, MessageService* service, BlockedUserServic
 		}
 
 	} while (strncmp(buffer, "quit", 4) != 0);
+	delete (handler);
 	close(new_socket);
 }
 
@@ -133,11 +134,6 @@ int main(int argc, char *argv[]) {
 		printUsage(argv[0]);
 	}
 	std::string dirPath = argv[2];
-
-	MessageDao* dao = new MessageDao(dirPath);
-	MessageService* service = new MessageService(dao);
-
-	BlockedUserService* blockedUser = new BlockedUserService(dirPath);
 
 	struct sockaddr_in address, cliaddress;
 
@@ -168,6 +164,10 @@ int main(int argc, char *argv[]) {
 
 	socklen_t addrlen = sizeof(struct sockaddr_in);
 
+	MessageDao* dao = new MessageDao(dirPath);
+	MessageService* service = new MessageService(dao);
+	BlockedUserService* blockedUser = new BlockedUserService(dirPath);
+
 	std::list<std::thread> threads;
 
 	while (1) {
@@ -182,6 +182,8 @@ int main(int argc, char *argv[]) {
 			Helper::answerClient(new_socket, "BANNED\n");
 		}
 	}
+	delete (service);
+	delete (blockedUser);
 	close(create_socket);
 	return EXIT_SUCCESS;
 }

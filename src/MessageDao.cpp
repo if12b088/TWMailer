@@ -26,7 +26,6 @@ MessageDao::MessageDao(std::string dirPath) {
 }
 
 MessageDao::~MessageDao() {
-	// TODO Auto-generated destructor stub
 }
 
 bool MessageDao::saveMessage(Message* msg) {

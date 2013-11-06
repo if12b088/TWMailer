@@ -17,15 +17,14 @@
 #define LDAP_PORT 389
 #define SEARCHBASE "dc=technikum-wien,dc=at"
 #define SCOPE LDAP_SCOPE_SUBTREE
-#define BIND_USER "uid=if12b046,ou=People,dc=technikum-wien,dc=at"		/* anonymous bind with user and pw NULL */
-#define BIND_PW "Kreizi_90"
+//#define BIND_USER "uid=if12b046,ou=People,dc=technikum-wien,dc=at"
+#define BIND_USER NULL /* anonymous bind with user and pw NULL */
+#define BIND_PW NULL
 
 LDAPService::LDAPService() {
-	// TODO Auto-generated destructor stub
 }
 
 LDAPService::~LDAPService() {
-	// TODO Auto-generated destructor stub
 }
 
 bool LDAPService::login(std::string username, std::string password) {
@@ -57,8 +56,7 @@ bool LDAPService::login(std::string username, std::string password) {
 	}
 
 	/* perform ldap search */
-	rc = ldap_search_s(ld, SEARCHBASE, SCOPE, usernamefilter.str().c_str(),
-			attribs, 0, &result);
+	rc = ldap_search_s(ld, SEARCHBASE, SCOPE, usernamefilter.str().c_str(), attribs, 0, &result);
 
 	if (rc != LDAP_SUCCESS) {
 		fprintf(stderr, "LDAP search error: %s\n", ldap_err2string(rc));
@@ -70,14 +68,21 @@ bool LDAPService::login(std::string username, std::string password) {
 		return false;
 	}
 
-	for (e = ldap_first_entry(ld, result); e != NULL;
-			e = ldap_next_entry(ld, e)) {
+	for (e = ldap_first_entry(ld, result); e != NULL; e = ldap_next_entry(ld, e)) {
 		//printf("DN: %s\n", ldap_get_dn(ld, e));
 		rc = ldap_simple_bind_s(ld, ldap_get_dn(ld, e), password.c_str());
 
 		if (rc != LDAP_SUCCESS) {
+			/* free memory used for result */
+			ldap_msgfree(result);
+			free(attribs[0]);
+			ldap_unbind(ld);
 			return false;
 		} else {
+			/* free memory used for result */
+			ldap_msgfree(result);
+			free(attribs[0]);
+			ldap_unbind(ld);
 			return true;
 		}
 	}
@@ -85,9 +90,7 @@ bool LDAPService::login(std::string username, std::string password) {
 	/* free memory used for result */
 	ldap_msgfree(result);
 	free(attribs[0]);
-	printf("LDAP search suceeded\n");
-
 	ldap_unbind(ld);
-	return true;
+	return false;
 }
 

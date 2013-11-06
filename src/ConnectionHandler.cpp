@@ -129,7 +129,6 @@ void ConnectionHandler::sendCommand() {
 	}
 
 	delete (msg);
-	//delete[] file;
 }
 
 void ConnectionHandler::list() {
@@ -159,7 +158,7 @@ void ConnectionHandler::read() {
 	std::stringstream ss;
 
 	if (msg->getMsgNr() == 0) {
-		Helper::answerClient(socket, "Es konnte keine eindeutige Message gefunden werden\n");
+		Helper::answerClient(socket, "0\nEs konnte keine eindeutige Message gefunden werden\n");
 	} else {
 		ss << msg->getMsgNr() << "\n" << msg->toProtocol();
 		Helper::answerClient(socket, ss.str());
