@@ -272,18 +272,18 @@ void handleConnection(int new_socket, MessageService* service,
 					//Send File
 					if (msg->isFileAttached()) {
 						long long fileSize = msg->getFile()->getFilesize();
-						int toRead;
+						int toSend;
 						char* file = msg->getFile()->getFile();
 
 						while (fileSize > 0) {
 							if (fileSize > BUF) {
-								toRead = BUF;
+								toSend = BUF;
 							} else {
-								toRead = fileSize;
+								toSend = fileSize;
 							}
 
 							do {
-								sendSize = send(new_socket, file, toRead, 0);
+								sendSize = send(new_socket, file, toSend, 0);
 								recv(new_socket, blockOK, 2, 0);
 								if (strcmp(blockOK, "Y") != 0) {
 									printf("blockOK: %s\n", blockOK);
