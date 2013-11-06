@@ -5,6 +5,8 @@
  *      Author: richie
  */
 
+#include <sys/types.h>
+#include <sys/socket.h>
 #include "Helper.h"
 #define MAXLINE 1500
 
@@ -56,8 +58,7 @@ std::string Helper::removeNewline(std::string s) {
 	return s;
 }
 
-std::list<std::string> Helper::splitString(std::string string,
-		std::string delimiter) {
+std::list<std::string> Helper::splitString(std::string string, std::string delimiter) {
 	std::list<std::string> list;
 	size_t pos = 0;
 	std::string token;
@@ -70,4 +71,12 @@ std::list<std::string> Helper::splitString(std::string string,
 		list.push_back(string);
 	}
 	return list;
+}
+
+void Helper::answerClient(int socket, std::string msg) {
+	//answer
+	if (send(socket, msg.c_str(), msg.length(), 0) == -1) {
+		perror("Send error");
+		return;
+	}
 }

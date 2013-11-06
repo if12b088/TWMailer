@@ -13,13 +13,12 @@
 #include <sstream>
 #include "LDAPService.h"
 
-//#define LDAP_HOST "ldap.technikum-wien.at"
 #define LDAP_HOST "ldap.technikum-wien.at"
 #define LDAP_PORT 389
 #define SEARCHBASE "dc=technikum-wien,dc=at"
 #define SCOPE LDAP_SCOPE_SUBTREE
-#define BIND_USER NULL		/* anonymous bind with user and pw NULL */
-#define BIND_PW NULL
+#define BIND_USER "uid=if12b046,ou=People,dc=technikum-wien,dc=at"		/* anonymous bind with user and pw NULL */
+#define BIND_PW "Kreizi_90"
 
 LDAPService::LDAPService() {
 	// TODO Auto-generated destructor stub
@@ -47,7 +46,7 @@ bool LDAPService::login(std::string username, std::string password) {
 		return false;
 	}
 
-	//printf("connected to LDAP server %s on port %d\n", LDAP_HOST, LDAP_PORT);
+	printf("connected to LDAP server %s on port %d\n", LDAP_HOST, LDAP_PORT);
 
 	/* anonymous bind */
 	int rc = ldap_simple_bind_s(ld, BIND_USER, BIND_PW);

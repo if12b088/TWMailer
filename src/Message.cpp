@@ -104,6 +104,7 @@ std::string Message::toProtocol() {
 	}
 	result.append("\n");
 	result.append(this->text);
+	result.append(".\n");
 	return result;
 }
 

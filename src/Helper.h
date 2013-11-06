@@ -18,8 +18,8 @@ class Helper {
 public:
 	static ssize_t readline(int fd, char *vptr, size_t maxlen);
 	static std::string removeNewline(std::string s);
-	static std::list<std::string> splitString(std::string string,
-			std::string delimiter);
+	static std::list<std::string> splitString(std::string string, std::string delimiter);
+	static void answerClient(int socket, std::string msg);
 private:
 	static ssize_t my_read(int fd, char *ptr);
 
